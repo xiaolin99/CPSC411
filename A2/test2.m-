@@ -1,0 +1,7 @@
+begin
+
+    if y then x:= 10
+           else x:= 1;
+    z:= z * x;
+
+end
