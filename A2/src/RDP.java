@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.io.*;
 
 /* Grammar (after removing left recursion)
 prog -> stmt.
@@ -37,10 +38,26 @@ factor -> LPAR expr RPAR
 public class RDP {
 	private int index;
 	private ArrayList<String> tokenList;
+	private String prettyAST;
+	private int labelCounter;
+	private PrintWriter stackCode;
 	
-	public RDP(ArrayList<String> tl) {
+	public RDP(ArrayList<String> tl, String filename) {
 		index = 0;
 		tokenList = tl;
+		prettyAST = new String();
+		labelCounter = 1;
+		try {
+			stackCode = new PrintWriter(filename);
+		} catch (IOException e) {
+			System.out.println("ERROR: unable to create stack machine file");
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	public void printAST() {
+		System.out.println(prettyAST);
 	}
 	
 	// helper funcitons
@@ -107,6 +124,8 @@ public class RDP {
 	 */
 	public void start() {
 		prog();
+		stackCode.flush();
+		stackCode.close();
 	}
 	
 	/**
@@ -126,38 +145,66 @@ public class RDP {
       | BEGIN stmtlist END.
 	 */
 	public void stmt() {
+		prettyAST += " Block [";
 		System.out.println("stmt" + ": "+ tokenList.get(index) + "...");
 		if (tokenList.get(index).equals("IF")) {
+			String L1 = "L"+labelCounter;
+			labelCounter ++;
+			String L2 = "L"+labelCounter;
+			labelCounter ++;
+			prettyAST += " If ";
 			index ++;
 			expr();
+			// note to self: expr must push result to stack
+			stackCode.println("  cJUMP "+L1);
 			expect("THEN");
 			index ++;
 			stmt();
+			stackCode.println("  JUMP "+L2);
 			expect("ELSE");
 			index ++;
+			stackCode.println(L1+":");
 			stmt();
+			stackCode.println(L2+":");
 		}
 		else if (tokenList.get(index).equals("WHILE")) {
+			String L1 = "L"+labelCounter;
+			labelCounter ++;
+			String L2 = "L"+labelCounter;
+			labelCounter ++;
+			prettyAST += " while ";
 			index ++;
+			stackCode.println(L1+":");
 			expr();
+			stackCode.println("  cJUMP "+L2);
 			expect("DO");
 			index ++;
 			stmt();
+			stackCode.println("  JUMP "+L1);
+			stackCode.println(L2+":");
 		}
 		else if (tokenList.get(index).equals("INPUT")) {
+			prettyAST += " Input ";
 			index ++;
 			expectID();
+			stackCode.println("  READ "+ tokenList.get(index).substring(3));
 			index ++;
+			
 		}
 		else if (isID(tokenList.get(index))) {
+			prettyAST += " Assign " + tokenList.get(index) + " ";
+			String id = tokenList.get(index).substring(3);
 			index ++;
 			expect("ASSIGN");
 			index ++;
 			expr();
+			stackCode.println("  LOAD "+ id);
 		}
 		else if (tokenList.get(index).equals("WRITE")) {
+			prettyAST += " Print ";
 			index ++;
 			expr();
+			stackCode.println("  PRINT");
 		}
 		else if (tokenList.get(index).equals("BEGIN")) {
 			index ++;
@@ -166,9 +213,10 @@ public class RDP {
 			index ++;
 		}
 		else {
-			System.out.println("ERROR!");
+			System.out.println("ERROR: Expected stmt, but got "+tokenList.get(index));
 			System.exit(1);
 		}
+		prettyAST += " ]\n";
 	}
 	
 	/**
@@ -206,8 +254,10 @@ public class RDP {
 	 */
 	public void expr() {
 		System.out.println("expr" + ": "+ tokenList.get(index) + "...");
+		prettyAST += "(";
 		term();
 		exprP();
+		prettyAST += ")";
 	}
 	
 	/**
@@ -230,9 +280,16 @@ public class RDP {
 	 */
 	public void addop() {
 		System.out.println("addop" + ": "+ tokenList.get(index) + "...");
-		if (tokenList.get(index).equals("ADD") || 
-				tokenList.get(index).equals("SUB"))
+		if (tokenList.get(index).equals("ADD")) {
+			prettyAST = new StringBuilder(prettyAST).insert(prettyAST.lastIndexOf("("), "ADD ").toString();
+			stackCode.println("  OP2 +");
 			index ++;
+		}
+		else if	(tokenList.get(index).equals("SUB")) {
+			prettyAST = new StringBuilder(prettyAST).insert(prettyAST.lastIndexOf("("), "SUB ").toString();
+			stackCode.println("  OP2 -");
+			index ++;
+		}
 		else {
 			expect("ADD or SUB");
 		}
@@ -243,8 +300,10 @@ public class RDP {
 	 */
 	public void term() {
 		System.out.println("term" + ": "+ tokenList.get(index) + "...");
+		prettyAST += "(";
 		factor();
 		termP();
+		prettyAST += ")";
 	}
 
 	/**
@@ -270,9 +329,16 @@ public class RDP {
 	 */
 	public void mulop() {
 		System.out.println("mulop" + ": "+ tokenList.get(index) + "...");
-		if (tokenList.get(index).equals("MUL") || 
-				tokenList.get(index).equals("DIV"))
+		if (tokenList.get(index).equals("MUL")) {
+			prettyAST = new StringBuilder(prettyAST).insert(prettyAST.lastIndexOf("("), "MUL ").toString();
+			stackCode.println("  OP2 *");
 			index ++;
+		}
+		else if (tokenList.get(index).equals("DIV")) {
+			prettyAST = new StringBuilder(prettyAST).insert(prettyAST.lastIndexOf("("), "DIV ").toString();
+			stackCode.println("  OP2 /");
+			index ++;
+		}
 		else {
 			expect("MUL or DIV");
 		}
@@ -287,24 +353,32 @@ public class RDP {
 	public void factor() {
 		System.out.println("factor" + ": "+ tokenList.get(index) + "...");
 		if (tokenList.get(index).equals("LPAR")) {
+			prettyAST += "(";
 			index ++;
 			expr();
 			expect("RPAR");
 			index ++;
+			prettyAST += ")";
 		}
 		else if (isID(tokenList.get(index))) {
+			prettyAST += " " + tokenList.get(index) + " ";
+			stackCode.println("  rPUSH "+tokenList.get(index).substring(3));
 			index ++;
 		}
 		else if (isNUM(tokenList.get(index))) {
+			prettyAST += " " + tokenList.get(index) + " ";
+			stackCode.println("  cPUSH "+tokenList.get(index));
 			index ++;
 		}
 		else if (tokenList.get(index).equals("SUB")) {
 			index ++;
 			expectNUM();
+			prettyAST += " -" + tokenList.get(index) + " ";
+			stackCode.println("  cPUSH -"+tokenList.get(index));
 			index ++;
 		}
 		else {
-			System.out.println("ERROR!");
+			System.out.println("ERROR: Expected factor, but got "+tokenList.get(index));
 			System.exit(1);
 		}
 	}
@@ -318,10 +392,13 @@ public class RDP {
 			System.out.println("Usage : java RDP <inputfile>");
 	    }
 	    else {
+	    	System.out.println("Token List:");
 	    	ArrayList<String> tokenList = mm_lexor.getTokenList(args[0]);
-	    	RDP r = new RDP(tokenList);
+	    	RDP r = new RDP(tokenList, args[0]+".sc");
 	    	r.start();
-	    	System.out.println("Success");
+	    	System.out.println("Parsing Success");
+	    	System.out.println("AST:");
+	    	r.printAST();
 	    }
 
 	}
