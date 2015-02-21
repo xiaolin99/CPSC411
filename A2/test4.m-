@@ -1,0 +1,7 @@
+/* This program test error detection on too many brackets
+   It's common to have an extra bracket in complex expressions, and RDP should catch it */
+begin
+	x:= 1;
+	y:= 2;
+	z:= x+y*(3-(x-3))-2);
+end

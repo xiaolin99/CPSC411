@@ -1,0 +1,5 @@
+/* Oops I forgot to close this multi-line comment, so this program is treated only as comment
+begin
+	x:= 2;
+	write x;
+end

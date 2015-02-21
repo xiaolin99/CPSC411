@@ -1,7 +1,16 @@
+/* This program test nested conditions
+   Program should:
+  - print 2 if user enter 2
+  - print 1 if user enter 1
+  - print 0 if user enters any other number */ 
 begin
-
-    if y then x:= 10
-           else x:= 1;
-    z:= z * x;
-
+	input x;
+    if x-1 then 
+    	if x-2 then
+    		z:= 0
+    	else
+    		z:= 2
+    else
+    	z:= 1;
+    write z;
 end

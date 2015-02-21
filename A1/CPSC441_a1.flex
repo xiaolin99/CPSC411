@@ -26,7 +26,7 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 /* comments */
 Comment = {MultiLineComment} | {OneLineComment} 
 
-MultiLineComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
+MultiLineComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/" | "/*" [^"*/"]*
 OneLineComment     = "%" {InputCharacter}* {LineTerminator}
 
 

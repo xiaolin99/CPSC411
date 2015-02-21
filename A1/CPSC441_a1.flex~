@@ -15,6 +15,10 @@
   private int sym_if = 0;
 %}
 
+%eof{
+  System.out.println();
+%eof}
+
 LineTerminator = \r|\n|\r\n
 InputCharacter = [^\r\n]
 WhiteSpace     = {LineTerminator} | [ \t\f]
@@ -22,7 +26,7 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 /* comments */
 Comment = {MultiLineComment} | {OneLineComment} 
 
-MultiLineComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
+MultiLineComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/" | "/*" [^"*/"]
 OneLineComment     = "%" {InputCharacter}* {LineTerminator}
 
 

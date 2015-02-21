@@ -1,0 +1,20 @@
+  cPUSH 20
+  LOAD y
+  cPUSH 10
+  LOAD z
+  cPUSH 10
+  cPUSH 2
+  OP2 /
+  rPUSH y
+  rPUSH z
+  cPUSH 5
+  OP2 -
+  OP2 *
+  cPUSH -1
+  OP2 *
+  OP2 +
+  cPUSH 5
+  OP2 -
+  LOAD x
+  rPUSH x
+  PRINT

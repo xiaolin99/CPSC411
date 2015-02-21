@@ -1,0 +1,11 @@
+/* This program test looping plus complex conditions
+   Program will print all odd numbers that's less than or equal to user's input 
+   e.g. user input 6, program will print 5, 3, 1 */
+begin
+	input x;
+	while x do
+		begin
+			if (x+1)/2-x/2 then write x else z:= 0;
+			x:= x-1;
+		end;
+end
