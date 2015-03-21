@@ -7,6 +7,7 @@ import java_cup.runtime.*;
 import java.io.*;
 
 parser code {:
+
   public static void main(String[] args) {
     try {
       System.out.println("Parsing ["+args[0]+"]");
@@ -14,10 +15,14 @@ parser code {:
       Scanner lexer = new mpp_lexor( new java.io.FileReader(args[0]));
       // start parsing
       parser p = new parser(lexer);
-      p.parse();
+      Node start = (Node) p.parse().value;
+      String astString = "";
+      astString += start.toString();
+
+      System.out.println(astString);
     }
     catch (Exception e) {
-	System.out.println("EXCEPTION");
+		e.printStackTrace();
     }
   }
 :};
@@ -34,205 +39,205 @@ terminal FUN, RETURN;
 terminal CID, ID, RVAL, IVAL, BVAL, CVAL;
 
 /* program */
-non terminal prog, block;
+non terminal Node prog, block;
 /* declarations */
-non terminal declarations, declaration, var_declaration;
-non terminal var_specs, more_var_specs, var_spec, array_dimensions, type;
+non terminal Node declarations, declaration, var_declaration;
+non terminal Node var_specs, more_var_specs, var_spec, array_dimensions, type;
 /* functions */
-non terminal fun_declaration, fun_block;
-non terminal param_list, parameters, more_parameters, basic_declaration, basic_array_dimensions;
+non terminal Node fun_declaration, fun_block;
+non terminal Node param_list, parameters, more_parameters, basic_declaration, basic_array_dimensions;
 /* polynomial inductive datatypes */
-non terminal data_declaration;
-non terminal cons_declarations, more_cons_decl, cons_decl;
-non terminal type_list, more_type;
+non terminal Node data_declaration;
+non terminal Node cons_declarations, more_cons_decl, cons_decl;
+non terminal Node type_list, more_type;
 /* M statements */
-non terminal program_body, fun_body;
-non terminal prog_stmts, prog_stmt, location;
+non terminal Node program_body, fun_body;
+non terminal Node prog_stmts, prog_stmt, location;
 /* case statements */
-non terminal case_list, more_case, case;
-non terminal var_list, var_list1, more_var_list1;
+non terminal Node case_list, more_case, case;
+non terminal Node var_list, var_list1, more_var_list1;
 /* expression */
-non terminal expr, bint_term, bint_factor;
-non terminal compare_op, int_expr, addop, int_term, mulop, int_factor;
+non terminal Node expr, bint_term, bint_factor;
+non terminal Node compare_op, int_expr, addop, int_term, mulop, int_factor;
 /* modifier */
-non terminal modifier_list;
-non terminal fun_argument_list, cons_argument_list, arguments, more_arguments;
+non terminal Node modifier_list;
+non terminal Node fun_argument_list, cons_argument_list, arguments, more_arguments;
 
 start with prog;
 
 
 /* program */
 
-prog		::= block
+prog		::= block:b									{: RESULT = new Node(b); RESULT.name += "M_prog"; :}
 	;
-block		::= declarations program_body
+block		::= declarations:d program_body:p						{: RESULT = new Node(d, p); RESULT.name += "M_block";  :}
 	;
 
 /* declarations */
 
-declarations	::= declaration SEMICLON declarations
-		|
+declarations	::= declaration:d1 SEMICLON:s declarations:d2					{: RESULT = new Node(d1, s, d2); :}
+		|										{: RESULT = new Node(); :}
 	;
-declaration	::= var_declaration
-		| fun_declaration
-		| data_declaration
+declaration	::= var_declaration:v								{: RESULT = new Node(v); :}
+		| fun_declaration:f								{: RESULT = new Node(f); :}
+		| data_declaration:d								{: RESULT = new Node(d); :}
 	;
-var_declaration	::= VAR var_specs COLON type
+var_declaration	::= VAR:va var_specs:v COLON:c type:t						{: RESULT = new Node(va, v, c, t);  RESULT.name += "M_var";:}
 	;
-var_specs	::= var_spec more_var_specs
+var_specs	::= var_spec:v more_var_specs:mv						{: RESULT = new Node(v, mv); :}
 	;
-more_var_specs	::= COMMA var_spec more_var_specs
-		|
+more_var_specs	::= COMMA:c var_spec:v more_var_specs:mv					{: RESULT = new Node(c, v, mv); :}
+		|										{: RESULT = new Node(); :}
 	;
-var_spec	::= ID array_dimensions
+var_spec	::= ID:i array_dimensions:a							{: RESULT = new Node(i, a); :}
 	;
-array_dimensions ::= SLPAR expr SRPAR array_dimensions
-		|
+array_dimensions ::= SLPAR:sl expr:e SRPAR:sr array_dimensions:ad				{: RESULT = new Node(sl, e, sr, ad); :}
+		|										{: RESULT = new Node(); :}
 	;
-type		::= INT
-		| REAL
-		| BOOL
-		| CHAR
-		| ID
+type		::= INT:i 									{: RESULT = new Node(i); :}
+		| REAL:r 									{: RESULT = new Node(r); :}
+		| BOOL:b 									{: RESULT = new Node(b); :}
+		| CHAR:c 									{: RESULT = new Node(c); :}
+		| ID:id 									{: RESULT = new Node(id); :}
 	;
 /* functions */
 
-fun_declaration	::= FUN ID param_list COLON type CLPAR fun_block CRPAR
+fun_declaration	::= FUN:f ID:id param_list:pl COLON:c type:t CLPAR:clp fun_block:fb CRPAR:crp 	{: RESULT = new Node(f, id, pl, c, t, clp, fb, crp); RESULT.name += "M_fun";  :}
 	;
-fun_block	::= declarations fun_body
+fun_block	::= declarations:d fun_body:fb							{: RESULT = new Node(d, fb); RESULT.name += "M_block"; :}
 	;
-param_list	::= LPAR parameters RPAR
+param_list	::= LPAR:lp parameters:p RPAR:rp						{: RESULT = new Node(lp, p, rp); :}
 	;
-parameters	::= basic_declaration more_parameters
-		|
+parameters	::= basic_declaration:bd more_parameters:mp					{: RESULT = new Node(bd, mp); :}
+		|										{: RESULT = new Node(); :}
 	;
-more_parameters	::= COMMA basic_declaration more_parameters
-		|
+more_parameters	::= COMMA:c basic_declaration:bd more_parameters:mp 				{: RESULT = new Node(c, bd, mp); :}
+		|										{: RESULT = new Node(); :}
 	;
 
-basic_declaration ::= ID basic_array_dimensions COLON type
+basic_declaration ::= ID:id basic_array_dimensions:bad COLON:c type:t 				{: RESULT = new Node(id, bad, c, t); :}
 	;
-basic_array_dimensions ::= SLPAR SRPAR basic_array_dimensions
-		|
+basic_array_dimensions ::= SLPAR:slp SRPAR:srp basic_array_dimensions:bad 			{: RESULT = new Node(slp, srp, bad); :}
+		|										{: RESULT = new Node(); :}
 	;
 
 /* polynomial */
 
-data_declaration ::= DATA ID EQUAL cons_declarations
+data_declaration ::= DATA:d ID:id EQUAL:eq cons_declarations:cd 				{: RESULT = new Node(d, id, eq, cd);  RESULT.name += "M_data";:}
 	;
-cons_declarations ::= cons_decl more_cons_decl
+cons_declarations ::= cons_decl:cd more_cons_decl:mcd 						{: RESULT = new Node(cd, mcd); :}
 	;
-more_cons_decl	::= SLASH cons_decl more_cons_decl
-		|
+more_cons_decl	::= SLASH:sl cons_decl:cd more_cons_decl:mcd 					{: RESULT = new Node(sl, cd, mcd); :}
+		|										{: RESULT = new Node(); :}
 	;
-cons_decl	::= CID OF type_list
-		| CID
+cons_decl	::= CID:c OF:of type_list:tl 							{: RESULT = new Node(c, of, tl); :}
+		| CID:c 									{: RESULT = new Node(c); :}
 	;
-type_list	::= type more_type
+type_list	::= type:t more_type:mt 							{: RESULT = new Node(t, mt); :}
 	;
-more_type	::= MUL type more_type
-		|
+more_type	::= MUL:m type:t more_type:mt 							{: RESULT = new Node(m, t, mt); :}
+		|										{: RESULT = new Node(); :}
 	;
 
 /* M statements */
 
-program_body	::= BEGIN prog_stmts END
-		| prog_stmts
+program_body	::= BEGIN:b prog_stmts:ps END:ed						{: RESULT = new Node(b, ps, ed); :}
+		| prog_stmts:ps									{: RESULT = new Node(ps); :}
 	;
-fun_body	::= BEGIN prog_stmts RETURN expr SEMICLON END
-		| prog_stmts RETURN expr SEMICLON
+fun_body	::= BEGIN:b prog_stmts:ps RETURN:r expr:ep SEMICLON:s END:e			{: RESULT = new Node(b, ps, r, ep, s, e); :}
+		| prog_stmts:ps RETURN:r expr:ep SEMICLON:s					{: RESULT = new Node(ps, r, ep, s); :}
 	;
-prog_stmts	::= prog_stmt SEMICLON prog_stmts
+prog_stmts	::= prog_stmt:ps SEMICLON:s prog_stmts:pss					{: RESULT = new Node(ps, s, pss); :}
 		|
 	;
-prog_stmt	::= IF expr THEN prog_stmt ELSE prog_stmt
-		| WHILE expr DO prog_stmt
-		| READ location
-		| location ASSIGN expr
-		| PRINT expr
-		| CLPAR block CRPAR
-		| CASE expr OF CLPAR case_list CRPAR
+prog_stmt	::= IF:i expr:e THEN:t prog_stmt:ps ELSE:es prog_stmt:ps2			{: RESULT = new Node(i, e, t, ps, es, ps2); RESULT.name += "M_cond"; :}
+		| WHILE:w expr:ep DO:d prog_stmt:ps						{: RESULT = new Node(w, ep, d, ps); RESULT.name += "M_while";  :}
+		| READ:r location:l								{: RESULT = new Node(r, l); RESULT.name += "M_read";  :}
+		| location:l ASSIGN:a expr:e							{: RESULT = new Node(l, a, e); RESULT.name += "M_ass";  :}
+		| PRINT:p expr:e								{: RESULT = new Node(p, e); :}
+		| CLPAR:clp block:b CRPAR:crp							{: RESULT = new Node(clp, b, crp); :}
+		| CASE:cs expr:ep OF:o CLPAR:clp case_list:cl CRPAR:crp				{: RESULT = new Node(cs, ep, o, clp, cl, crp);  RESULT.name += "M_case"; :}
 	;
-location	::= ID array_dimensions
+location	::= ID:i array_dimensions:ad							{: RESULT = new Node(i, ad); :}
 	;
 
 /* case */
 
-case_list	::= case more_case
+case_list	::= case:c more_case:mc								{: RESULT = new Node(c, mc); :}
 	;
-more_case	::= SLASH case more_case
-		|
+more_case	::= SLASH:sl case:c more_case:mc						{: RESULT = new Node(sl, c, mc); :}
+		|										{: RESULT = new Node(); :}
 	;
-case		::= CID var_list ARROW prog_stmt
+case		::= CID:c var_list:vl ARROW:a prog_stmt:ps					{: RESULT = new Node(c, vl, a, ps); :}
 	;
-var_list	::= LPAR var_list1 RPAR
-		|
+var_list	::= LPAR:lp var_list1:vl RPAR:rp						{: RESULT = new Node(lp, vl, rp); :}
+		|										{: RESULT = new Node(); :}
 	;
-var_list1	::= ID more_var_list1
+var_list1	::= ID:i more_var_list1:mvl							{: RESULT = new Node(i, mvl); :}
 	;
-more_var_list1	::= COMMA ID more_var_list1
-		|
+more_var_list1	::= COMMA:c ID:i more_var_list1:mvl						{: RESULT = new Node(c, i, mvl); :}
+		|										{: RESULT = new Node(); :}
 	;
 
 
 /* Expressions */
 
-expr		::= expr OR bint_term
-		| bint_term
+expr		::= expr:e OR:o bint_term:bt					 	{: RESULT = new Node(e, o, bt); RESULT.name += "M_expr1";:}
+		| bint_term:bt								{: RESULT = new Node(bt);  RESULT.name += "M_expr2";:}
 	;
-bint_term	::= bint_term AND bint_factor
-		| bint_factor
+bint_term	::= bint_term:bt AND:a bint_factor:bf					{: RESULT = new Node(bt, a, bf); :}
+		| bint_factor:bf							{: RESULT = new Node(bf); :}
 	;
-bint_factor	::= NOT bint_factor
-		| int_expr compare_op int_expr
-		| int_expr
+bint_factor	::= NOT:n bint_factor:bf						{: RESULT = new Node(n, bf); :}
+		| int_expr:ie compare_op:co int_expr:ie2				{: RESULT = new Node(ie, co, ie2); RESULT.name += "M_app"; :}
+		| int_expr:ie								{: RESULT = new Node(ie); :}
 	;
-compare_op	::= EQUAL 
-		| LT 
-		| GT 
-		| LE 
-		| GE
+compare_op	::= EQUAL:eq								{: RESULT = new Node(eq); :}
+		| LT:lt									{: RESULT = new Node(lt); :}
+		| GT:gt									{: RESULT = new Node(gt); :}
+		| LE:le									{: RESULT = new Node(le); :}
+		| GE:ge									{: RESULT = new Node(ge); :}
 	;
-int_expr	::= int_expr addop int_term
-		| int_term
+int_expr	::= int_expr:ie addop:a int_term:it					{: RESULT = new Node(ie, a, it);  RESULT.name += "M_app"; :}
+		| int_term:it								{: RESULT = new Node(it); :}
 	;
-addop		::= ADD 
-		| SUB
+addop		::= ADD:a								{: RESULT = new Node(a); :}
+		| SUB:s									{: RESULT = new Node(s); :}
 	;
-int_term	::= int_term mulop int_factor
-		| int_factor
+int_term	::= int_term:it mulop:m int_factor:f					{: RESULT = new Node(it, m, f); RESULT.name += "M_app"; :}
+		| int_factor:f								{: RESULT = new Node(f); :}
 	;
-mulop		::= MUL 
-		| DIV
+mulop		::= MUL:m								{: RESULT = new Node(m); :}
+		| DIV:d									{: RESULT = new Node(d); :}
 	;
-int_factor	::= LPAR expr RPAR
-		| SIZE LPAR ID basic_array_dimensions RPAR
-		| FLOAT LPAR expr RPAR
-		| FLOOR LPAR expr RPAR
-		| CEIL LPAR expr RPAR
-		| ID modifier_list
-		| CID cons_argument_list
-		| IVAL
-		| RVAL
-		| BVAL
-		| CVAL
-		| SUB int_factor
+int_factor	::= LPAR:lp expr:e RPAR:rp						{: RESULT = new Node(lp, e, rp); :}
+		| SIZE:s LPAR:lp ID:i basic_array_dimensions:bad RPAR:rp		{: RESULT = new Node(lp, i, bad, rp);  RESULT.name += "M_size"; :}
+		| FLOAT:f LPAR:lp expr:e RPAR:rp					{: RESULT = new Node(f, lp, e, rp); :}
+		| FLOOR:f LPAR:lp expr:e RPAR:rp					{: RESULT = new Node(f, lp, e, rp); :}
+		| CEIL:c LPAR:lp expr:e RPAR:rp						{: RESULT = new Node(c, lp, e, rp); :}
+		| ID:i modifier_list:ml							{: RESULT = new Node(i, ml);   :}
+		| CID:c cons_argument_list:cal						{: RESULT = new Node(c, cal); :}
+		| IVAL:IVAL								{: RESULT = new Node(IVAL); :}
+		| RVAL:RVAL								{: RESULT = new Node(RVAL); :}
+		| BVAL:BVAL								{: RESULT = new Node(BVAL); :}
+		| CVAL:CVAL								{: RESULT = new Node(CVAL); :}
+		| SUB:s int_factor:i							{: RESULT = new Node(s, i); :}
 	;
 
 /* modifier */
-modifier_list	::= fun_argument_list
-		| array_dimensions
+modifier_list	::= fun_argument_list:fal						{: RESULT = new Node(fal); :}
+		| array_dimensions:ad							{: RESULT = new Node(ad); :}
 	;
-fun_argument_list ::= LPAR arguments RPAR
+fun_argument_list ::= LPAR:lp arguments:a RPAR:rp					{: RESULT = new Node(lp, a, rp); :}
 	;
-cons_argument_list ::= fun_argument_list
-		|
+cons_argument_list ::= fun_argument_list:fal						{: RESULT = new Node(fal); :}
+		|									{: RESULT = new Node(); :}
 	;
-arguments	::= expr more_arguments
-		|
+arguments	::= expr:e more_arguments:ma						{: RESULT = new Node(e, ma); :}
+		|									{: RESULT = new Node(); :}
 	;
-more_arguments	::= COMMA expr more_arguments
-		|
+more_arguments	::= COMMA:c expr:e more_arguments:ma					{: RESULT = new Node(c, e, ma); :}
+		|									{: RESULT = new Node(); :}
 	;
 
 

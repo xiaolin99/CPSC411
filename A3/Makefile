@@ -16,7 +16,7 @@ clean:
 	rm -rf *~ *class
 
 clean-all:
-	rm -rf *~ *class *java
+	rm -rf *~ *class parser.java sym.java mpp_lexor.java
 
 run:
 	java -cp /usr/share/java/java_cup.jar:. parser

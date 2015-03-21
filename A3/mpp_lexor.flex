@@ -1,7 +1,7 @@
 /* CPSC441 - Assignment 3 */
 /* by Xiao Lin */
 /* Reference: http://jflex.de/manual.html */
-import java_cup.runtime.Symbol;
+import java_cup.runtime.*;
 
 %%
 
@@ -15,12 +15,16 @@ import java_cup.runtime.Symbol;
 %{
   /* can define helper functions here */
   StringBuffer string = new StringBuffer();
-
-  private Symbol symbol(int type) {
-    return new Symbol(type, yyline, yycolumn);
+	  
+  private Symbol symbol(String name, int type) {
+    Symbol s = new Symbol(type, yyline, yycolumn);
+    s.value = name;
+    return s;
   }
-  private Symbol symbol(int type, Object value) {
-    return new Symbol(type, yyline, yycolumn, value);
+  private Symbol symbol(String name, int type, Object value) {
+    Symbol s = new Symbol(type, yyline, yycolumn, value);
+    s.value = new String(name + " " + value.toString());
+    return s;
   }
 %}
 
@@ -114,66 +118,66 @@ CVAL = {quote}{char}{quote} |  {quote}"\n" {quote} | {quote}"\t" {quote}
 %%
 
 <YYINITIAL> {
-{ADD}				{ return symbol(sym.ADD); }
-{SUB}				{ return symbol(sym.SUB); }
-{MUL}				{ return symbol(sym.MUL); }
-{DIV}				{ return symbol(sym.DIV); }
-{ARROW}				{ return symbol(sym.ARROW); }
-{AND}				{ return symbol(sym.AND); }
-{OR}				{ return symbol(sym.OR); }
-{NOT}				{ return symbol(sym.NOT); }
-{EQUAL}				{ return symbol(sym.EQUAL); }
-{LT}				{ return symbol(sym.LT); }
-{GT}				{ return symbol(sym.GT); }
-{LE}				{ return symbol(sym.LE); }
-{GE}				{ return symbol(sym.GE); }
-{ASSIGN}			{ return symbol(sym.ASSIGN); }
-{LPAR}				{ return symbol(sym.LPAR); }
-{RPAR}				{ return symbol(sym.RPAR); }
-{CLPAR}				{ return symbol(sym.CLPAR); }
-{CRPAR}				{ return symbol(sym.CRPAR); }
-{SLPAR}				{ return symbol(sym.SLPAR); }
-{SRPAR}				{ return symbol(sym.SRPAR); }
-{SLASH}				{ return symbol(sym.SLASH); }
-{COLON}				{ return symbol(sym.COLON); }
-{SEMICLON}			{ return symbol(sym.SEMICLON); }
-{COMMA}				{ return symbol(sym.COMMA); }
-{IF}				{ return symbol(sym.IF); }
-{THEN}				{ return symbol(sym.THEN); }
-{WHILE}				{ return symbol(sym.WHILE); }
-{DO}				{ return symbol(sym.DO); }
-{READ}				{ return symbol(sym.READ); }
-{ELSE}				{ return symbol(sym.ELSE); }
-{BEGIN}				{ return symbol(sym.BEGIN); }
-{END}				{ return symbol(sym.END); }
-{CASE}				{ return symbol(sym.CASE); }
-{OF}				{ return symbol(sym.OF); }
-{PRINT}				{ return symbol(sym.PRINT); }
-{INT}				{ return symbol(sym.INT); }
-{BOOL}				{ return symbol(sym.BOOL); }
-{CHAR}				{ return symbol(sym.CHAR); }
-{REAL}				{ return symbol(sym.REAL); }
-{VAR}				{ return symbol(sym.VAR); }
-{DATA}				{ return symbol(sym.DATA); }
-{SIZE}				{ return symbol(sym.SIZE); }
-{FLOAT}				{ return symbol(sym.FLOAT); }
-{FLOOR}				{ return symbol(sym.FLOOR); }
-{CEIL}				{ return symbol(sym.CEIL); }
-{FUN}				{ return symbol(sym.FUN); }
-{RETURN}			{ return symbol(sym.RETURN); }
+{ADD}				{ return symbol("M_add", sym.ADD); }
+{SUB}				{ return symbol("M_sub", sym.SUB); }
+{MUL}				{ return symbol("M_mul", sym.MUL); }
+{DIV}				{ return symbol("M_div", sym.DIV); }
+{ARROW}				{ return symbol("M_arrow", sym.ARROW); }
+{AND}				{ return symbol("M_and", sym.AND); }
+{OR}				{ return symbol("M_or", sym.OR); }
+{NOT}				{ return symbol("M_not", sym.NOT); }
+{EQUAL}				{ return symbol("M_equal", sym.EQUAL); }
+{LT}				{ return symbol("M_lt", sym.LT); }
+{GT}				{ return symbol("M_gt", sym.GT); }
+{LE}				{ return symbol("M_le", sym.LE); }
+{GE}				{ return symbol("M_ge", sym.GE); }
+{ASSIGN}			{ return symbol("M_ass", sym.ASSIGN); }
+{LPAR}				{ return symbol("(", sym.LPAR); }
+{RPAR}				{ return symbol(")", sym.RPAR); }
+{CLPAR}				{ return symbol("(", sym.CLPAR); }
+{CRPAR}				{ return symbol(")", sym.CRPAR); }
+{SLPAR}				{ return symbol("[", sym.SLPAR); }
+{SRPAR}				{ return symbol("]", sym.SRPAR); }
+{SLASH}				{ return symbol("|", sym.SLASH); }
+{COLON}				{ return symbol(":", sym.COLON); }
+{SEMICLON}			{ return symbol(";", sym.SEMICLON); }
+{COMMA}				{ return symbol(",", sym.COMMA); }
+{IF}				{ return symbol("M_if", sym.IF); }
+{THEN}				{ return symbol("M_then", sym.THEN); }
+{WHILE}				{ return symbol("M_while", sym.WHILE); }
+{DO}				{ return symbol("M_do", sym.DO); }
+{READ}				{ return symbol("M_read", sym.READ); }
+{ELSE}				{ return symbol("M_else", sym.ELSE); }
+{BEGIN}				{ return symbol("M_begin", sym.BEGIN); }
+{END}				{ return symbol("M_end", sym.END); }
+{CASE}				{ return symbol("M_case", sym.CASE); }
+{OF}				{ return symbol("M_of", sym.OF); }
+{PRINT}				{ return symbol("M_print", sym.PRINT); }
+{INT}				{ return symbol("M_int", sym.INT); }
+{BOOL}				{ return symbol("M_bool", sym.BOOL); }
+{CHAR}				{ return symbol("M_char", sym.CHAR); }
+{REAL}				{ return symbol("M_real", sym.REAL); }
+{VAR}				{ return symbol("M_var", sym.VAR); }
+{DATA}				{ return symbol("M_data", sym.DATA); }
+{SIZE}				{ return symbol("M_size", sym.SIZE); }
+{FLOAT}				{ return symbol("M_float", sym.FLOAT); }
+{FLOOR}				{ return symbol("M_floor", sym.FLOOR); }
+{CEIL}				{ return symbol("M_ceil", sym.CEIL); }
+{FUN}				{ return symbol("M_fun", sym.FUN); }
+{RETURN}			{ return symbol("M_return", sym.RETURN); }
 
 // (booleans)
-{BVAL}				{ return symbol(sym.BVAL, new String(yytext())); }
+{BVAL}				{ return symbol("M_bval", sym.BVAL, new String(yytext())); }
 // (constructor)
-{CID}				{ return symbol(sym.CID, new String(yytext())); }
+{CID}				{ return symbol("M_cid", sym.CID, new String(yytext())); }
 // (identifier)
-{ID}				{ return symbol(sym.ID, new String(yytext())); }
+{ID}				{ return symbol("", sym.ID, new String("\""+yytext()+"\"")); }
 // (real/float)
-{RVAL}				{ return symbol(sym.RVAL, new Double(yytext())); }
+{RVAL}				{ return symbol("M_rval", sym.RVAL, new Double(yytext())); }
 // (integer)
-{IVAL}				{ return symbol(sym.IVAL, new Integer(yytext())); }
+{IVAL}				{ return symbol("M_ival", sym.IVAL, new Integer(yytext())); }
 //(character)
-{CVAL}				{ return symbol(sym.CVAL, new String(yytext())); }
+{CVAL}				{ return symbol("M_cval", sym.CVAL, new String(yytext())); }
 
  /* comments */
 {Comment}                      { /* ignore */ }
