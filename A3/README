@@ -40,6 +40,13 @@ To Run:
 
 -----------------------------------------------------------------------------
 
+To Clean Up:
+1. change directory to A3
+2. run "make clean" to clean all .class files
+3. run "make clean-all" to clean all .class files and all auto-generated .java files
+
+-----------------------------------------------------------------------------
+
 Reference:
 http://pages.cpsc.ucalgary.ca/~robin/class/411/M+/Mspec.pdf
 http://www2.cs.tum.edu/projekte/cup/examples.php
