@@ -16,8 +16,9 @@ parser code {:
       // start parsing
       parser p = new parser(lexer);
       Node start = (Node) p.parse().value;
-      String astString = "";
+      String astString = "M_prog (\n";
       astString += start.toString();
+      astString += ")\n";
 
       System.out.println(astString);
     }
@@ -68,7 +69,7 @@ start with prog;
 
 /* program */
 
-prog		::= block:b									{: RESULT = new Node(b); RESULT.name += "M_prog"; :}
+prog		::= block:b									{: RESULT = new Node(b); :}
 	;
 block		::= declarations:d program_body:p						{: RESULT = new Node(d, p); RESULT.name += "M_block";  :}
 	;
@@ -104,7 +105,7 @@ type		::= INT:i 									{: RESULT = new Node(i); :}
 
 fun_declaration	::= FUN:f ID:id param_list:pl COLON:c type:t CLPAR:clp fun_block:fb CRPAR:crp 	{: RESULT = new Node(f, id, pl, c, t, clp, fb, crp); RESULT.name += "M_fun";  :}
 	;
-fun_block	::= declarations:d fun_body:fb							{: RESULT = new Node(d, fb); RESULT.name += "M_block"; :}
+fun_block	::= declarations:d fun_body:fb							{: RESULT = new Node(d, fb); RESULT.name += "F_block"; :}
 	;
 param_list	::= LPAR:lp parameters:p RPAR:rp						{: RESULT = new Node(lp, p, rp); :}
 	;
@@ -182,13 +183,13 @@ more_var_list1	::= COMMA:c ID:i more_var_list1:mvl						{: RESULT = new Node(c, 
 
 /* Expressions */
 
-expr		::= expr:e OR:o bint_term:bt					 	{: RESULT = new Node(e, o, bt); RESULT.name += "M_expr1";:}
+expr		::= expr:e OR:o bint_term:bt					 	{: RESULT = new Node(e, o, bt); RESULT.name += "M_app3";:}
 		| bint_term:bt								{: RESULT = new Node(bt);  RESULT.name += "M_expr2";:}
 	;
-bint_term	::= bint_term:bt AND:a bint_factor:bf					{: RESULT = new Node(bt, a, bf); :}
+bint_term	::= bint_term:bt AND:a bint_factor:bf					{: RESULT = new Node(bt, a, bf); RESULT.name += "M_app3";:}
 		| bint_factor:bf							{: RESULT = new Node(bf); :}
 	;
-bint_factor	::= NOT:n bint_factor:bf						{: RESULT = new Node(n, bf); :}
+bint_factor	::= NOT:n bint_factor:bf						{: RESULT = new Node(n, bf); RESULT.name += "M_app4";:}
 		| int_expr:ie compare_op:co int_expr:ie2				{: RESULT = new Node(ie, co, ie2); RESULT.name += "M_app"; :}
 		| int_expr:ie								{: RESULT = new Node(ie); :}
 	;
@@ -212,9 +213,9 @@ mulop		::= MUL:m								{: RESULT = new Node(m); :}
 	;
 int_factor	::= LPAR:lp expr:e RPAR:rp						{: RESULT = new Node(lp, e, rp); :}
 		| SIZE:s LPAR:lp ID:i basic_array_dimensions:bad RPAR:rp		{: RESULT = new Node(lp, i, bad, rp);  RESULT.name += "M_size"; :}
-		| FLOAT:f LPAR:lp expr:e RPAR:rp					{: RESULT = new Node(f, lp, e, rp); :}
-		| FLOOR:f LPAR:lp expr:e RPAR:rp					{: RESULT = new Node(f, lp, e, rp); :}
-		| CEIL:c LPAR:lp expr:e RPAR:rp						{: RESULT = new Node(c, lp, e, rp); :}
+		| FLOAT:f LPAR:lp expr:e RPAR:rp					{: RESULT = new Node(f, lp, e, rp); RESULT.name += "M_app2"; :}
+		| FLOOR:f LPAR:lp expr:e RPAR:rp					{: RESULT = new Node(f, lp, e, rp); RESULT.name += "M_app2";:}
+		| CEIL:c LPAR:lp expr:e RPAR:rp						{: RESULT = new Node(c, lp, e, rp); RESULT.name += "M_app2";:}
 		| ID:i modifier_list:ml							{: RESULT = new Node(i, ml);   :}
 		| CID:c cons_argument_list:cal						{: RESULT = new Node(c, cal); :}
 		| IVAL:IVAL								{: RESULT = new Node(IVAL); :}

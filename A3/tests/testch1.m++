@@ -1,4 +1,0 @@
-var x:char;
-begin
-   read x; print x;
-end

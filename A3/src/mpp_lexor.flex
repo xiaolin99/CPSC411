@@ -15,6 +15,8 @@ import java_cup.runtime.*;
 %{
   /* can define helper functions here */
   StringBuffer string = new StringBuffer();
+  
+  boolean success = true;
 	  
   private Symbol symbol(String name, int type) {
     Symbol s = new Symbol(type, yyline, yycolumn);
@@ -30,6 +32,9 @@ import java_cup.runtime.*;
 
 %eof{
   System.out.println();
+
+  if (!success) {System.out.println("Code contains errors. Cannot parse."); System.exit(1);}
+
 %eof}
 
 LineTerminator = \r|\n|\r\n
@@ -189,4 +194,5 @@ CVAL = {quote}{char}{quote} |  {quote}"\n" {quote} | {quote}"\t" {quote}
 
 /* error fallback */
 [^]                              { System.out.println("Illegal character <"+
-                                                    yytext()+">"); }
+                                                    yytext()+"> at line "+yyline); success = false;}
+

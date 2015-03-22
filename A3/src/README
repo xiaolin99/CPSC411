@@ -1,0 +1,139 @@
+CPSC411 - Assignemt 3
+by Xiao Lin
+00288263
+
+NOTE: I did this assignment for M++ according to the link provided here:
+http://pages.cpsc.ucalgary.ca/~robin/class/411/Assignments/2015/M/ass3.html
+->  http://pages.cpsc.ucalgary.ca/~robin/class/411/M+/Mspec.pdf
+-----------------------------------------------------------------------------
+
+Files:
+Makefile - automake specification
+mpp_lexor.flex - jflex specification for the scanner
+mpp_parser.cup - java_cup specification for the parser
+Node.java - a class to hold AST tree node, and contains function to print AST tree
+mpp_lexor.java - jflex auto-generated scanner
+parser.java - java_cup auto-generated parser
+sym.java - java_cup auto-generated terminal table
+java_cup.jar/java_cup-runtime.jar - java_cup library
+run_parser.sh - a shell script wrapper to run the parser
+tests - a folder containing all the tests
+  testError1.m++\testError2.m++\testError3.m++ - 3 tests that contain errors
+  other .m++ - various tests (without errors) copied from /home/411/M+ folder
+
+-----------------------------------------------------------------------------
+
+To Compile:
+(must have jflex installed)
+1. change directory to A3
+2. run "make"
+
+-----------------------------------------------------------------------------
+
+To Run:
+(must compile first)
+1. change directory to A3
+2. make sure to have execute permission of "run_parser.sh"
+3. run
+./run_parser.sh $PATH_TO_TESTFILE
+(the AST tree will be printed to stdout)
+
+-----------------------------------------------------------------------------
+
+Reference:
+http://pages.cpsc.ucalgary.ca/~robin/class/411/M+/Mspec.pdf
+http://www2.cs.tum.edu/projekte/cup/examples.php
+http://stackoverflow.com/questions/4650366/create-abstract-tree-problem-from-parser
+
+-----------------------------------------------------------------------------
+
+Sample Output:
+
+[xlin@localhost src]$ 
+[xlin@localhost src]$ 
+[xlin@localhost src]$ make clean
+rm -rf *~ *class *log
+[xlin@localhost src]$ make
+javac -cp java_cup-runtime.jar *java
+[xlin@localhost src]$ ./run_parser.sh 
+Usage: ./run_parser.sh %PATH_TO_TESTFILE
+[xlin@localhost src]$ 
+[xlin@localhost src]$ ./run_parser.sh tests/testError1.m++ 
+Parsing [tests/testError1.m++]
+Syntax error at character 5 of input
+Couldn't repair and continue parse at character 5 of input
+java.lang.Exception: Can't recover from previous error(s)
+	at java_cup.runtime.lr_parser.report_fatal_error(lr_parser.java:376)
+	at java_cup.runtime.lr_parser.unrecovered_syntax_error(lr_parser.java:425)
+	at java_cup.runtime.lr_parser.parse(lr_parser.java:617)
+	at parser.main(parser.java:489)
+[xlin@localhost src]$ ./run_parser.sh ../tests/testError2.m++ 
+Parsing [../tests/testError2.m++]
+
+M_prog (
+	[]
+	,[])
+
+[xlin@localhost src]$ 
+[xlin@localhost src]$ ./run_parser.sh tests/testError3.m++ 
+Parsing [tests/testError3.m++]
+Illegal character <"> at line 5
+Illegal character <"> at line 5
+
+Code contains errors. Cannot parse.
+[xlin@localhost src]$ 
+[xlin@localhost src]$ ./run_parser.sh tests/append.m++ 
+Parsing [tests/append.m++]
+
+M_prog (
+	[M_var ( "x", "intlist"), M_var ( "y", "intlist"), M_data ( "intlist"M_equal, [M_cid #nil|M_cid #consM_ofM_intM_mul "intlist"]), 
+		M_fun ( "append",[( "a": "intlist", "b": "intlist")], "intlist",[M_var ( "z", "intlist"), ]
+			,[M_beginM_case ( "a",[M_cid #nilM_arrowM_ass ( "z", "b")|M_cid #cons( "v", "L")M_arrowM_ass ( "z",M_cid #cons( "v", "append"( "L", "b")))]), M_return "z", M_end]), ]
+	,[M_beginM_ass ( "x",M_cid #cons(M_ival 1,M_cid #cons(M_ival 2,M_cid #nil()))), M_ass ( "y",M_cid #cons(M_ival 3,M_cid #cons(M_ival 4,M_cid #nil()))), M_ass ( "x", "append"( "x", "y")), M_end])
+
+[xlin@localhost src]$ ./run_parser.sh tests/mergesort.m++ 
+Parsing [tests/mergesort.m++]
+
+M_prog (
+	[M_data ( "listint"M_equal, [M_cid #CONSM_ofM_intM_mul "listint"|M_cid #NIL]), M_var ( "xs", "listint"), M_var ( "a",M_bool), 
+		M_fun ( "readints",[()], "listint",[M_var ( "x",M_int), M_var ( "zL", "listint"), ]
+			,[M_beginM_read ( "x"), M_cond (M_app (M_equal, "x",M_ival 0),M_ass ( "zL",M_cid #NIL()),M_ass ( "zL",M_cid #CONS( "x", "readints"()))), M_return "zL", M_end]), 
+		M_fun ( "writeints",[( "zL": "listint")],M_bool,[M_var ( "a",M_bool), ]
+			,[M_beginM_case ( "zL",[M_cid #NILM_arrowM_ass ( "a",M_bval true)|M_cid #CONS( "x", "yL")M_arrow(	[]
+	,[M_beginM_print "x", M_ass ( "a", "writeints"( "yL")), M_end])]), M_return "a", M_end]), 
+		M_fun ( "merge",[( "x": "listint", "y": "listint")], "listint",[M_var ( "z", "listint"), ]
+			,[M_beginM_case ( "x",[M_cid #NILM_arrowM_ass ( "z", "y")|M_cid #CONS( "xh", "xt")M_arrow(	[]
+	,[M_beginM_case ( "y",[M_cid #NILM_arrowM_ass ( "z", "x")|M_cid #CONS( "yh", "yt")M_arrowM_cond (M_app (M_lt, "xh", "yh"),M_ass ( "z",M_cid #CONS( "xh", "merge"( "xt", "y"))),M_ass ( "z",M_cid #CONS( "yh", "merge"( "x", "yt"))))]), M_end])]), M_return "z", M_end]), 
+		M_fun ( "odd",[( "x": "listint")], "listint",[M_var ( "zL", "listint"), ]
+			,[M_beginM_case ( "x",[M_cid #NILM_arrowM_ass ( "zL",M_cid #NIL())|M_cid #CONS( "z", "tx")M_arrowM_ass ( "zL", "even"( "tx"))]), M_return "zL", M_end]), 
+		M_fun ( "even",[( "x": "listint")], "listint",[M_var ( "z", "listint"), ]
+			,[M_beginM_case ( "x",[M_cid #NILM_arrowM_ass ( "z",M_cid #NIL())|M_cid #CONS( "x", "tx")M_arrowM_ass ( "z",M_cid #CONS( "x", "odd"( "tx")))]), M_return "z", M_end]), 
+		M_fun ( "mergesort",[( "z": "listint")], "listint",[M_var ( "v", "listint"), ]
+			,[M_beginM_case ( "z",[M_cid #NILM_arrowM_ass ( "v",M_cid #NIL)|M_cid #CONS( "a", "b")M_arrow(	[]
+	,[M_beginM_case ( "b",[M_cid #NILM_arrowM_ass ( "v",M_cid #CONS( "a",M_cid #NIL()))|M_cid #CONS( "u", "w")M_arrowM_ass ( "v", "merge"( "mergesort"( "odd"( "z")), "mergesort"( "even"( "z"))))]), M_end])]), M_return "v", M_end]), ]
+	,[M_beginM_ass ( "xs", "readints"()), M_ass ( "a", "writeints"( "mergesort"( "xs"))), M_end])
+
+[xlin@localhost src]$ ./run_parser.sh tests/quicksort.m++ 
+Parsing [tests/quicksort.m++]
+
+M_prog (
+	[M_data ( "listint"M_equal, [M_cid #CONSM_ofM_intM_mul "listint"|M_cid #NIL]), M_var ( "xs", "listint"), M_var ( "a",M_bool), 
+		M_fun ( "readints",[()], "listint",[M_var ( "x",M_int), M_var ( "zL", "listint"), ]
+			,[M_beginM_read ( "x"), M_cond (M_app (M_equal, "x",M_ival 0),M_ass ( "zL",M_cid #NIL()),M_ass ( "zL",M_cid #CONS( "x", "readints"()))), M_return "zL", M_end]), 
+		M_fun ( "writeints",[( "zL": "listint")],M_bool,[M_var ( "a",M_bool), ]
+			,[M_beginM_case ( "zL",[M_cid #NILM_arrowM_ass ( "a",M_bval true)|M_cid #CONS( "x", "yL")M_arrow(	[]
+	,[M_beginM_print "x", M_ass ( "a", "writeints"( "yL")), M_end])]), M_return "a", M_end]), 
+		M_fun ( "quicksort",[( "L": "listint")], "listint",[M_var ( "z", "listint"), ]
+			,[M_beginM_case ( "L",[M_cid #NILM_arrowM_ass ( "z",M_cid #NIL)|M_cid #CONS( "a", "as")M_arrow(	[
+		M_fun ( "left_part",[( "a":M_int, "as": "listint")], "listint",[M_var ( "z", "listint"), ]
+			,[M_beginM_case ( "as",[M_cid #NILM_arrowM_ass ( "z",M_cid #NIL())|M_cid #CONS( "x", "y")M_arrowM_cond (M_app (M_lt, "x", "a"),M_ass ( "z",M_cid #CONS( "x", "left_part"( "a", "y"))),M_ass ( "z", "left_part"( "a", "y")))]), M_return "z", M_end]), 
+		M_fun ( "right_part",[( "a":M_int, "as": "listint")], "listint",[M_var ( "z", "listint"), ]
+			,[M_beginM_case ( "as",[M_cid #NILM_arrowM_ass ( "z",M_cid #NIL())|M_cid #CONS( "x", "y")M_arrowM_cond (M_app (M_ge, "x", "a"),M_ass ( "z",M_cid #CONS( "x", "right_part"( "a", "y"))),M_ass ( "z", "right_part"( "a", "y")))]), M_return "z", M_end]), ]
+	,[M_beginM_ass ( "z", "append"( "quicksort"( "left_part"( "a", "as")),M_cid #CONS( "a", "quicksort"( "right_part"( "a", "as"))))), M_end])]), M_return "z", M_end]), 
+		M_fun ( "append",[( "x": "listint", "y": "listint")], "listint",[M_var ( "z", "listint"), ]
+			,[M_beginM_case ( "x",[M_cid #NILM_arrowM_ass ( "z", "y")|M_cid #CONS( "v", "vs")M_arrowM_ass ( "z",M_cid #CONS( "v", "append"( "vs", "y")))]), M_return "z", M_end]), ]
+	,[M_beginM_ass ( "xs", "readints"()), M_ass ( "a", "writeints"( "quicksort"( "xs"))), M_end])
+
+
+
+

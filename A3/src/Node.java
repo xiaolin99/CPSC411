@@ -107,18 +107,13 @@ public class Node{
 	  @Override
 	  public String toString() {
 		  if (children.size() < 1) return s;
-		  if (name.equals("M_prog")) {
-			  s += "M_prog\n  (";
-			  s += childToString(0);
-			  s += ")\n";
-		  }
 		  if (name.equals("M_block")) {
-			  s += "[";
+			  s += "\t[";
 			  s += childToString(0);
 			  s += "]\n";
-			  s += ",[";
+			  s += "\t,[";
 			  s += childToString(1);
-			  s += "]\n";
+			  s += "]";
 		  }
 		  else if (name.equals("M_var")){
 			  s += childToString(0);
@@ -128,22 +123,31 @@ public class Node{
 			  s += ")";
 		  }
 		  else if (name.equals("M_fun")){
+			  s += "\n\t\t";
 			  s += childToString(0);
 			  s += " (" + childToString(1) + ",[";
 			  s += childToString(2) + "],";
 			  // s += childToString(3);
 			  s += childToString(4) + ",";
-			  s += childToString(5);
+			  // s += childToString(5);
 			  s += childToString(6);
-			  s += childToString(7);
-			  s += ")\n";
+			  // s += childToString(7);
+			  s += ")";
+		  }
+		  else if (name.equals("F_block")) {
+			  s += "[";
+			  s += childToString(0);
+			  s += "]\n";
+			  s += "\t\t\t,[";
+			  s += childToString(1);
+			  s += "]";
 		  }
 		  else if (name.equals("M_data")){
 			  s += childToString(0);
 			  s += " (" + childToString(1);
 			  s += childToString(2);
 			  s += ", ["+childToString(3)+"]";
-			  s += ")\n";
+			  s += ")";
 		  }
 		  else if (name.equals("M_ass")){
 			  s += childToString(1);
@@ -185,22 +189,26 @@ public class Node{
 			  s += childToString(0) + ",";
 			  s += childToString(2) + ")";
 		  }
-		  else if (name.equals("M_expr1")){
-			  s += "[";
-			  s += childToString(0);
-			  s += childToString(1);
-			  s += childToString(2);
-			  s += "]";
+		  else if (name.equals("M_app2")) {
+			  s += "M_app (";
+			  s += childToString(0) + ",";
+			  s += childToString(2) + ")";
 		  }
-		  else if (name.equals("M_expr2")){
-			  s += "[";
-			  s += childToString(0);
-			  s += "]";
+		  else if (name.equals("M_app3")){
+			  s += "M_app (";
+			  s += childToString(1) + ",";
+			  s += childToString(0) + ",";
+			  s += childToString(2);
+			  s += ")";
+		  }
+		  else if (name.equals("M_app4")) {
+			  s += "M_app (";
+			  s += childToString(0) + ",";
+			  s += childToString(1) + ")";
 		  }
 		  else {
 			  for (int i = 0; i < children.size(); i ++) {
 				  if (children.get(i) == null) continue;
-				  //if (!s.startsWith(" ")) s += " ";
 				  s += childToString(i);
 			  }
 		  }
