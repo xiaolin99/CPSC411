@@ -1,0 +1,185 @@
+/* CPSC441 - Assignment 3 */
+/* by Xiao Lin */
+/* Reference: http://www2.cs.tum.edu/projekte/cup/examples.php */
+/*	      https://github.com/moy/JFlex/tree/master/jflex/examples */
+
+import java_cup.runtime.*;
+import java.io.*;
+
+parser code {:
+
+  public static void main(String[] args) {
+    try {
+      System.out.println("Parsing ["+args[0]+"]");
+      // create a buffering scanner wrapper
+      Scanner lexer = new m_lexor( new java.io.FileReader(args[0]));
+      // start parsing
+      parser p = new parser(lexer);
+      Node start = (Node) p.parse().value;
+      String astString = "M_prog (\n";
+      astString += start.toString();
+      astString += ")\n";
+
+      System.out.println(astString);
+    }
+    catch (Exception e) {
+		e.printStackTrace();
+    }
+  }
+:};
+
+terminal ADD, SUB, MUL, DIV;
+terminal AND, OR, NOT;
+terminal EQUAL, LT, GT, LE, GE;
+terminal ASSIGN;
+terminal LPAR, RPAR, CLPAR, CRPAR, SLPAR, SRPAR;
+terminal COLON, SEMICLON, COMMA;
+terminal IF, THEN, WHILE, DO, READ, ELSE, BEGIN, END, PRINT;
+terminal INT, BOOL, REAL, VAR, SIZE, FLOAT, FLOOR, CEIL;
+terminal FUN, RETURN;
+terminal ID, RVAL, IVAL, BVAL;
+
+/* program */
+non terminal Node prog, block;
+/* declarations */
+non terminal Node declarations, declaration, var_declaration;
+non terminal Node array_dimensions, type;
+/* functions */
+non terminal Node fun_declaration, fun_block;
+non terminal Node param_list, parameters, more_parameters, basic_declaration, basic_array_dimensions;
+/* M statements */
+non terminal Node program_body, fun_body;
+non terminal Node prog_stmts, prog_stmt;
+/* expression */
+non terminal Node identifier, expr, bint_term, bint_factor;
+non terminal Node compare_op, int_expr, addop, int_term, mulop, int_factor;
+/* modifier */
+non terminal Node modifier_list;
+non terminal Node arguments, more_arguments;
+
+start with prog;
+
+
+/* program */
+
+prog		::= block:b									{: RESULT = new Node(b); :}
+	;
+block		::= declarations:d program_body:p						{: RESULT = new Node(d, p); RESULT.name += "M_block";  :}
+	;
+
+/* declarations */
+
+declarations	::= declaration:d1 SEMICLON:s declarations:d2					{: RESULT = new Node(d1, s, d2); :}
+		|										{: RESULT = new Node(); :}
+	;
+declaration	::= var_declaration:v								{: RESULT = new Node(v); :}
+		| fun_declaration:f								{: RESULT = new Node(f); :}
+	;
+var_declaration	::= VAR:va ID:i array_dimensions:ad COLON:c type:t						{: RESULT = new Node(va, i,ad, c, t);  RESULT.name += "M_var";:}
+	;
+array_dimensions ::= SLPAR:sl expr:e SRPAR:sr array_dimensions:ad				{: RESULT = new Node(sl, e, sr, ad); :}
+		|										{: RESULT = new Node(); :}
+	;
+type		::= INT:i 									{: RESULT = new Node(i); :}
+		| REAL:r 									{: RESULT = new Node(r); :}
+		| BOOL:b 									{: RESULT = new Node(b); :}
+	;
+/* functions */
+
+fun_declaration	::= FUN:f ID:id param_list:pl COLON:c type:t CLPAR:clp fun_block:fb CRPAR:crp 	{: RESULT = new Node(f, id, pl, c, t, clp, fb, crp); RESULT.name += "M_fun";  :}
+	;
+fun_block	::= declarations:d fun_body:fb							{: RESULT = new Node(d, fb); RESULT.name += "F_block"; :}
+	;
+param_list	::= LPAR:lp parameters:p RPAR:rp						{: RESULT = new Node(lp, p, rp); :}
+	;
+parameters	::= basic_declaration:bd more_parameters:mp					{: RESULT = new Node(bd, mp); :}
+		|										{: RESULT = new Node(); :}
+	;
+more_parameters	::= COMMA:c basic_declaration:bd more_parameters:mp 				{: RESULT = new Node(c, bd, mp); :}
+		|										{: RESULT = new Node(); :}
+	;
+
+basic_declaration ::= ID:id basic_array_dimensions:bad COLON:c type:t 				{: RESULT = new Node(id, bad, c, t); :}
+	;
+basic_array_dimensions ::= SLPAR:slp SRPAR:srp basic_array_dimensions:bad 			{: RESULT = new Node(slp, srp, bad); :}
+		|										{: RESULT = new Node(); :}
+	;
+
+
+/* M statements */
+
+program_body	::= BEGIN:b prog_stmts:ps END:ed						{: RESULT = new Node(b, ps, ed); :}
+		| prog_stmts:ps									{: RESULT = new Node(ps); :}
+	;
+fun_body	::= BEGIN:b prog_stmts:ps RETURN:r expr:ep SEMICLON:s END:e			{: RESULT = new Node(b, ps, r, ep, s, e); :}
+		| prog_stmts:ps RETURN:r expr:ep SEMICLON:s					{: RESULT = new Node(ps, r, ep, s); :}
+	;
+prog_stmts	::= prog_stmt:ps SEMICLON:s prog_stmts:pss					{: RESULT = new Node(ps, s, pss); :}
+		|
+	;
+prog_stmt	::= IF:i expr:e THEN:t prog_stmt:ps ELSE:es prog_stmt:ps2			{: RESULT = new Node(i, e, t, ps, es, ps2); RESULT.name += "M_cond"; :}
+		| WHILE:w expr:ep DO:d prog_stmt:ps						{: RESULT = new Node(w, ep, d, ps); RESULT.name += "M_while";  :}
+		| READ:r identifier:l								{: RESULT = new Node(r, l); RESULT.name += "M_read";  :}
+		| identifier:l ASSIGN:a expr:e							{: RESULT = new Node(l, a, e); RESULT.name += "M_ass";  :}
+		| PRINT:p expr:e								{: RESULT = new Node(p, e); :}
+		| CLPAR:clp block:b CRPAR:crp							{: RESULT = new Node(clp, b, crp); :}
+	;
+identifier	::= ID:i array_dimensions:ad							{: RESULT = new Node(i, ad); :}
+	;
+
+
+/* Expressions */
+
+expr		::= expr:e OR:o bint_term:bt					 	{: RESULT = new Node(e, o, bt); RESULT.name += "M_app3";:}
+		| bint_term:bt								{: RESULT = new Node(bt);  RESULT.name += "M_expr2";:}
+	;
+bint_term	::= bint_term:bt AND:a bint_factor:bf					{: RESULT = new Node(bt, a, bf); RESULT.name += "M_app3";:}
+		| bint_factor:bf							{: RESULT = new Node(bf); :}
+	;
+bint_factor	::= NOT:n bint_factor:bf						{: RESULT = new Node(n, bf); RESULT.name += "M_app4";:}
+		| int_expr:ie compare_op:co int_expr:ie2				{: RESULT = new Node(ie, co, ie2); RESULT.name += "M_app"; :}
+		| int_expr:ie								{: RESULT = new Node(ie); :}
+	;
+compare_op	::= EQUAL:eq								{: RESULT = new Node(eq); :}
+		| LT:lt									{: RESULT = new Node(lt); :}
+		| GT:gt									{: RESULT = new Node(gt); :}
+		| LE:le									{: RESULT = new Node(le); :}
+		| GE:ge									{: RESULT = new Node(ge); :}
+	;
+int_expr	::= int_expr:ie addop:a int_term:it					{: RESULT = new Node(ie, a, it);  RESULT.name += "M_app"; :}
+		| int_term:it								{: RESULT = new Node(it); :}
+	;
+addop		::= ADD:a								{: RESULT = new Node(a); :}
+		| SUB:s									{: RESULT = new Node(s); :}
+	;
+int_term	::= int_term:it mulop:m int_factor:f					{: RESULT = new Node(it, m, f); RESULT.name += "M_app"; :}
+		| int_factor:f								{: RESULT = new Node(f); :}
+	;
+mulop		::= MUL:m								{: RESULT = new Node(m); :}
+		| DIV:d									{: RESULT = new Node(d); :}
+	;
+int_factor	::= LPAR:lp expr:e RPAR:rp						{: RESULT = new Node(lp, e, rp); :}
+		| SIZE:s LPAR:lp ID:i basic_array_dimensions:bad RPAR:rp		{: RESULT = new Node(lp, i, bad, rp);  RESULT.name = "M_size"; :}
+		| FLOAT:f LPAR:lp expr:e RPAR:rp					{: RESULT = new Node(f, lp, e, rp); RESULT.name = "M_app2"; :}
+		| FLOOR:f LPAR:lp expr:e RPAR:rp					{: RESULT = new Node(f, lp, e, rp); RESULT.name = "M_app2";:}
+		| CEIL:c LPAR:lp expr:e RPAR:rp						{: RESULT = new Node(c, lp, e, rp); RESULT.name = "M_app2";:}
+		| ID:i modifier_list:ml							{: RESULT = new Node(i, ml);   :}
+		| IVAL:IVAL								{: RESULT = new Node(IVAL); :}
+		| RVAL:RVAL								{: RESULT = new Node(RVAL); :}
+		| BVAL:BVAL								{: RESULT = new Node(BVAL); :}
+		| SUB:s int_factor:i							{: RESULT = new Node(s, i); RESULT.name = "M_neg"; :}
+	;
+
+/* modifier */
+modifier_list	::= LPAR:l arguments:fal RPAR:r						{: RESULT = new Node(l, fal, r); RESULT.name = "M_fn";:}
+		| array_dimensions:ad							{: RESULT = new Node(ad); :}
+	;
+
+arguments	::= expr:e more_arguments:ma						{: RESULT = new Node(e, ma); :}
+		|									{: RESULT = new Node(); :}
+	;
+more_arguments	::= COMMA:c expr:e more_arguments:ma					{: RESULT = new Node(c, e, ma); :}
+		|									{: RESULT = new Node(); :}
+	;
+
+

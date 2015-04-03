@@ -1,0 +1,8 @@
+/*
+	Grammar error - forgot to close this comment 
+	but not really an error, the prog will simply be empty
+var x:char;
+begin
+   read x;
+   print x;
+end

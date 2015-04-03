@@ -1,0 +1,9 @@
+/*
+	Scan error - m++ has not specification for strings or quotations */
+var x:char;
+begin
+   read x;
+   print "x";
+end
+
+
