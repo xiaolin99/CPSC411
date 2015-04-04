@@ -12,3 +12,6 @@
 /FunSymbol.class
 /TypeException.class
 /SymbolException.class
+/SyntaxChecker.class
+/SymbolChecker.class
+/Type.class

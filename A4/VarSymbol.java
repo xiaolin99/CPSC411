@@ -1,21 +1,9 @@
 
-public class VarSymbol extends MySymbol {
-	private int offset;
-	private int type;
-	private int dimentions;
-	private int dimentionsSize[];
-
-	public int getOffset() {
-		return offset;
-	}
-
-	public int getType() {
-		return type;
-	}
-
-	public int getDimentions() {
-		return dimentions;
-	}
+public class VarSymbol extends MySymbol{
+	public int offset;
+	public int type;
+	public int dimentions;
+	public int dimentionsSize[];
 	
 	public VarSymbol(String name, int offset, int type, int dimentions) {
 		super(name);
@@ -30,8 +18,16 @@ public class VarSymbol extends MySymbol {
 		for (int i = 0; i < dimentions; i ++) dimentionsSize[i] = arr[i];
 	}
 	
-	public int getDimentionsSize(int index) throws TypeException{
-		if (dimentions < 1 || index < 0 || index >= dimentions) throw new TypeException("Symbol Error: Array "+name+" does not have dimension "+index);
+	public int getDimentionsSize(int index) throws SymbolException{
+		if (dimentions < 1 || index < 0 || index >= dimentions) throw new SymbolException("Symbol Error: Array "+name+" does not have dimension "+index);
 		return dimentionsSize[index];
 	}
+	
+	public VarSymbol clone() {
+		VarSymbol s = new VarSymbol(name, offset, type, dimentions);
+		s.setDimentionsSize(dimentionsSize);
+		return s;
+	}
+	
+	
 }

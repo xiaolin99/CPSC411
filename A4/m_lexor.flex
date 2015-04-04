@@ -25,7 +25,7 @@ import java_cup.runtime.*;
   }
   private Symbol symbol(String name, int type, Object value) {
     Symbol s = new Symbol(type, yyline, yycolumn, value);
-    s.value = new String(name + " " + value.toString());
+    s.value = new String(value.toString());
     return s;
   }
 %}
@@ -163,13 +163,13 @@ BVAL = "false"| "true"
 {RETURN}			{ return symbol("M_return", sym.RETURN); }
 
 // (booleans)
-{BVAL}				{ return symbol("M_bval", sym.BVAL, new String(yytext())); }
+{BVAL}				{ return symbol("", sym.BVAL, new String(yytext())); }
 // (identifier)
 {ID}				{ return symbol("", sym.ID, new String("\""+yytext()+"\"")); }
 // (real/float)
-{RVAL}				{ return symbol("M_rval", sym.RVAL, new Double(yytext())); }
+{RVAL}				{ return symbol("", sym.RVAL, new Double(yytext())); }
 // (integer)
-{IVAL}				{ return symbol("M_ival", sym.IVAL, new Integer(yytext())); }
+{IVAL}				{ return symbol("", sym.IVAL, new Integer(yytext())); }
 
 
  /* comments */

@@ -108,7 +108,7 @@ public class Node{
 	  public String toString() {
 		  if (children.size() < 1) return s;
 		  if (name.equals("M_block")) {
-			  s += "\t[";
+			  s += "\tM_block[";
 			  s += childToString(0);
 			  s += "]\n";
 			  s += "\t,[";
@@ -116,22 +116,98 @@ public class Node{
 			  s += "]";
 		  }
 		  else if (name.equals("M_var")){
+			  s += "M_var(";
 			  s += childToString(0);
-			  s += " ("+childToString(1);
-			  s += ",";
-			  s += childToString(3);
+			  s += ", ["+childToString(1);
+			  s += "], ";
+			  s += childToString(2);
 			  s += ")";
 		  }
 		  else if (name.equals("M_fun")){
 			  s += "\n\t\t";
+			  s += "M_fun(";
 			  s += childToString(0);
-			  s += " (" + childToString(1) + ",[";
-			  s += childToString(2) + "],";
-			  // s += childToString(3);
-			  s += childToString(4) + ",";
-			  // s += childToString(5);
-			  s += childToString(6);
-			  // s += childToString(7);
+			  s += ", [" + childToString(1) + "],";
+			  s += childToString(2) + ",";
+			  s += childToString(3);
+			  s += ")";
+		  }
+		  else if (name.equals("M_ass")){
+			  s += "M_ass";
+			  s += " ("+childToString(0)+",";
+			  s += childToString(1)+")";
+		  }
+		  else if (name.equals("M_while")){
+			  s += "M_while";
+			  s += " ("+childToString(0)+",";
+			  s += childToString(1)+")";
+		  }
+		  else if (name.equals("M_cond")){
+			  s += "M_cond (";
+			  s += childToString(0)+",";
+			  s += childToString(1)+",";
+			  s += childToString(2);
+			  s += ")";
+		  }
+		  else if (name.equals("M_read")){
+			  s += "M_read";
+			  s += " ("+childToString(0)+")";
+		  }
+		  else if (name.equals("M_id")){
+			  s += "M_app (M_fn (";
+			  s += childToString(0) + ",";
+			  s += childToString(1) + ")";
+		  }
+		  else if (name.equals("M_or")){
+			  s += "M_app (M_or ";
+			  s += childToString(0) + ",";
+			  s += childToString(1) + ")";
+		  }
+		  else if (name.equals("M_and")){
+			  s += "M_app (M_and ";
+			  s += childToString(0) + ",";
+			  s += childToString(1) + ")";
+		  }
+		  else if (name.equals("M_size")){
+			  s += "M_app (M_size ";
+			  s += childToString(0) + ",";
+			  s += childToString(1) + ")";
+		  }
+		  else if (name.equals("M_float")){
+			  s += "M_app (M_float ";
+			  s += childToString(0) + ")";
+		  }
+		  else if (name.equals("M_floor")){
+			  s += "M_app (M_floor ";
+			  s += childToString(0) + ")";
+		  }
+		  else if (name.equals("M_ceil")){
+			  s += "M_app (M_ceil ";
+			  s += childToString(0) + ")";
+		  }
+		  else if (name.equals("M_neg")){
+			  s += "M_app (M_neg ";
+			  s += childToString(0) + ")";
+		  }
+		  else if (name.equals("M_comp")){
+			  s += "M_app (";
+			  s += childToString(1) + ",";
+			  s += childToString(0) + ",";
+			  s += childToString(2);
+			  s += ")";
+		  }
+		  else if (name.equals("M_addop")){
+			  s += "M_app (";
+			  s += childToString(1) + ",";
+			  s += childToString(0) + ",";
+			  s += childToString(2);
+			  s += ")";
+		  }
+		  else if (name.equals("M_mulop")){
+			  s += "M_app (";
+			  s += childToString(1) + ",";
+			  s += childToString(0) + ",";
+			  s += childToString(2);
 			  s += ")";
 		  }
 		  else if (name.equals("F_block")) {
@@ -141,54 +217,6 @@ public class Node{
 			  s += "\t\t\t,[";
 			  s += childToString(1);
 			  s += "]";
-		  }
-		  else if (name.equals("M_ass")){
-			  s += childToString(1);
-			  s += " ("+childToString(0)+",";
-			  s += childToString(2)+")";
-		  }
-		  else if (name.equals("M_while")){
-			  s += childToString(0);
-			  s += " ("+childToString(1)+",";
-			  //s += childToString(2);
-			  s += childToString(3)+")";
-		  }
-		  else if (name.equals("M_cond")){
-			  s += "M_cond (";
-			  //s += childToString(0);
-			  s += childToString(1)+",";
-			  //s += childToString(2);
-			  s += childToString(3)+",";
-			  //s += childToString(4);
-			  s += childToString(5);
-			  s += ")";
-		  }
-		  else if (name.equals("M_read")){
-			  s += childToString(0);
-			  s += " ("+childToString(1)+")";
-		  }
-		  else if (name.equals("M_app")){
-			  s += "M_app (";
-			  s += childToString(1) + ",";
-			  s += childToString(0) + ",";
-			  s += childToString(2) + ")";
-		  }
-		  else if (name.equals("M_app2")) {
-			  s += "M_app (";
-			  s += childToString(0) + ",";
-			  s += childToString(2) + ")";
-		  }
-		  else if (name.equals("M_app3")){
-			  s += "M_app (";
-			  s += childToString(1) + ",";
-			  s += childToString(0) + ",";
-			  s += childToString(2);
-			  s += ")";
-		  }
-		  else if (name.equals("M_app4")) {
-			  s += "M_app (";
-			  s += childToString(0) + ",";
-			  s += childToString(1) + ")";
 		  }
 		  else {
 			  for (int i = 0; i < children.size(); i ++) {
