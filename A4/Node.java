@@ -154,7 +154,7 @@ public class Node{
 			  s += " ("+childToString(0)+")";
 		  }
 		  else if (name.equals("M_id")){
-			  s += "M_app (M_fn (";
+			  s += "M_app (M_id (";
 			  s += childToString(0) + ",";
 			  s += childToString(1) + ")";
 		  }

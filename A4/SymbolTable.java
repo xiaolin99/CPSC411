@@ -120,12 +120,16 @@ public class SymbolTable {
 	 * @throws SymbolException
 	 */
 	public static MySymbol getSymbol(SymbolTable st, String id) throws SymbolException {
+		int level = 0;
 		SymbolTable cur_st = st;
 		while (cur_st != null) {
 			int index = cur_st.symbols.indexOf(new MySymbol(id));
-			if (index >= 0) return cur_st.symbols.get(index);
-			if (cur_st.nextLevel == null) break;
+			if (index >= 0) {
+				cur_st.symbols.get(index).level = level;
+				return cur_st.symbols.get(index);
+			}
 			cur_st = cur_st.nextLevel;
+			level ++;
 		}
 		throw new SymbolException("Symbol Error: "+id+" not found");
 	}
@@ -140,7 +144,7 @@ public class SymbolTable {
 	public static int getReturnType(SymbolTable st, String fun_name) throws SymbolException {
 		SymbolTable cur_st = st;
 		while (cur_st != null) {
-			System.out.println(cur_st);
+			//System.out.println(cur_st);
 			int index = cur_st.symbols.indexOf(new MySymbol(fun_name));
 			if (index >= 0) {
 				MySymbol s = cur_st.symbols.get(index);
@@ -193,6 +197,24 @@ public class SymbolTable {
 			cur_st = cur_st.nextLevel;
 		}
 		throw new SymbolException("Symbol Error: "+fun_name+" not found");
+	}
+	
+	/**
+	 * Method to find all arrays in a symbol table
+	 * @param st SymbolTable
+	 * @return ArrayList
+	 */
+	public static ArrayList<VarSymbol> getArrays(SymbolTable st) {
+		ArrayList<VarSymbol> l = new ArrayList<VarSymbol>();
+		if (st.symbols.size() < 1) return l;
+		for (int i = 0; i < st.symbols.size(); i ++){
+			MySymbol s = st.symbols.get(i);
+			if (s instanceof VarSymbol) {
+				VarSymbol v = (VarSymbol)s;
+				if (v.dimentions > 0) l.add(v);
+			}
+		}
+		return l;
 	}
 	
 	/**

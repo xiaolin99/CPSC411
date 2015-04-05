@@ -1,6 +1,6 @@
 all: parser.class
 
-parser.class: m_lexor.java parser.java sym.java
+parser.class: m_lexor.java parser.java sym.java SymbolChecker.java SymbolTable.java
 	javac -cp java_cup-runtime.jar *java
 
 m_lexor.java: m_lexor.flex

@@ -2,12 +2,12 @@
       To compute the factorial of a number
  */
 
-         var x:int;
-         fun fac(a:int):int
-         { var z:int;
+         var x:real;
+         fun fac(a:real):real
+         { var z:real;
            begin
-              if a=0 then z:= 1
-              else z:= a * fac(a-1);
+              if a=0.0 then z:= 1.0
+              else z:= a * fac(a-1.0);
               return z;
            end };
          begin 

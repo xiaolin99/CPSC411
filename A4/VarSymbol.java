@@ -8,6 +8,7 @@ public class VarSymbol extends MySymbol{
 	public int offset;
 	public int type;
 	public int dimentions;
+	public String dimensionsIR[];
 	public int dimentionsSize[];
 	
 	/**
@@ -23,6 +24,7 @@ public class VarSymbol extends MySymbol{
 		this.type = type;
 		this.dimentions = dimentions;
 		if (dimentions > 0) dimentionsSize = new int[dimentions];
+		if (dimentions > 0) dimensionsIR = new String[dimentions];
 	}
 	
 	/**
