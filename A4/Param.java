@@ -1,15 +1,16 @@
-/**
- * 
- */
 
 /**
+ * CPSC411 - Assignment 4
+ * This class represent a function param 
+ * (which is different than a regular var, so I made a seperate class)
  * @author xlin
  *
  */
-public class Param implements Comparable<Param> {
+public class Param {
 	private int type;
 	private int dimentions;
 	
+	// getters
 	public int getType() {
 		return type;
 	}
@@ -18,16 +19,24 @@ public class Param implements Comparable<Param> {
 		return dimentions;
 	}
 
+	/**
+	 * Constructor - pass in type and dimensions
+	 * @param type
+	 * @param dim
+	 */
 	public Param(int type, int dim) {
 		this.type = type;
 		this.dimentions = dim;
 	}
 
+	/**
+	 * check for equality
+	 */
 	@Override
-	public int compareTo(Param o) {
-		if (this.type != o.type) return -1;
-		if (this.dimentions != o.dimentions) return -1;
-		return 0;
+	public boolean equals(Object o) {
+		if (!(o instanceof Param)) return false;
+		Param p = (Param)o;
+		return (this.type == p.type && this.dimentions == p.dimentions);
 	}
 
 }

@@ -1,8 +1,8 @@
-/**
- * 
- */
+
 
 /**
+ * CPSC411 - Assignment 4
+ * Just my own Exception
  * @author xlin
  *
  */

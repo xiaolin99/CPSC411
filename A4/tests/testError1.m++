@@ -1,7 +1,0 @@
-/*
-	Grammar error - forgot a ";" at end of "read x" */
-var x:char;
-begin
-   read x
-   print x;
-end

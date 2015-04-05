@@ -1,7 +1,8 @@
-/* CPSC441 - Assignment 3 */
+/* CPSC441 - Assignment 4 */
 /* by Xiao Lin */
 /* Reference: http://www2.cs.tum.edu/projekte/cup/examples.php */
 /*	      https://github.com/moy/JFlex/tree/master/jflex/examples */
+/* Note: this spec is for M+, not M++ */
 
 import java_cup.runtime.*;
 import java.io.*;
@@ -16,11 +17,16 @@ parser code {:
       // start parsing
       parser p = new parser(lexer);
       Node start = (Node) p.parse().value;
+      System.out.println("AST: ");
       String astString = "M_prog (\n";
       astString += start.toString();
       astString += ")\n";
 
       System.out.println(astString);
+      
+      SymbolChecker sc = new SymbolChecker(start);
+      if (sc.checkSyntax()) System.out.println("Semantics are good");
+      else System.out.println("Semantics are not good");
     }
     catch (Exception e) {
 		e.printStackTrace();
@@ -122,7 +128,7 @@ prog_stmt	::= IF:i expr:e THEN:t prog_stmt:ps ELSE:es prog_stmt:ps2			{: RESULT 
 		| READ:r identifier:l								{: RESULT = new Node(l); RESULT.name = "M_read";  :}
 		| identifier:l ASSIGN:a expr:e							{: RESULT = new Node(l, e); RESULT.name = "M_ass";  :}
 		| PRINT:p expr:e								{: RESULT = new Node(e); RESULT.name = "M_print";   :}
-		| CLPAR:clp block:b CRPAR:crp							{: RESULT = new Node(b);  RESULT.name = "M_stmt_block":}
+		| CLPAR:clp block:b CRPAR:crp							{: RESULT = new Node(b);  RESULT.name = "M_stmt_block"; :}
 	;
 identifier	::= ID:i array_dimensions:ad							{: RESULT = new Node(i, ad); RESULT.name = "M_location"; :}
 	;
