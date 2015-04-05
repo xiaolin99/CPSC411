@@ -79,6 +79,7 @@ public class SymbolChecker {
 	 * Helper function to add to string
 	 */
 	private void addToString(String s) {
+		if (s == null || s == "null") return;
 		if (!pushToTmpS) str += s;
 		else tmpS += s;
 	}
@@ -194,6 +195,7 @@ public class SymbolChecker {
 					n = (Node)n.children.get(1);
 					i ++;
 				}
+				if (n.children.size() > 0) throw new SymbolException("Symbol Error: too many args in function "+id);
 				addToString(")");
 				return returnType;
 			}
@@ -216,6 +218,7 @@ public class SymbolChecker {
 		if (n.name.equals("M_addop")) {
 			if (debug) System.out.println("Checking M_addop");
 			boolean savedState = pushToTmpS;
+			if (!pushToTmpS) tmpS = "";
 			pushToTmpS = true;
 			tmpS += " IAPP(";
 			if (n.children.get(1).toString().contains("sub")) tmpS += "ISUB,[";
@@ -241,6 +244,7 @@ public class SymbolChecker {
 		// check mul/div
 		if (n.name.equals("M_mulop")) {
 			boolean savedState = pushToTmpS;
+			if (!pushToTmpS) tmpS = "";
 			pushToTmpS = true;
 			tmpS += " IAPP(";
 			if (n.children.get(1).toString().contains("div")) tmpS += "IDIV,[";
@@ -267,6 +271,7 @@ public class SymbolChecker {
 		// check negation
 		if (n.name.equals("M_neg")) {
 			boolean savedState = pushToTmpS;
+			if (!pushToTmpS) tmpS = "";
 			pushToTmpS = true;
 			tmpS += " IAPP(INEG,[";
 			if (debug) System.out.println("Checking M_neg");
@@ -288,6 +293,7 @@ public class SymbolChecker {
 		// check comparison
 		if (n.name.equals("M_comp")) {
 			boolean savedState = pushToTmpS;
+			if (!pushToTmpS) tmpS = "";
 			pushToTmpS = true;
 			tmpS += " IAPP(";
 			if (n.children.get(1).toString().contains("lt")) tmpS += "ILT,[";
@@ -508,6 +514,7 @@ public class SymbolChecker {
 		// Checking print
 		if (n.name.equals("M_print")) {
 			boolean savedState = pushToTmpS;
+			if (!pushToTmpS) tmpS = "";
 			pushToTmpS = true;
 			tmpS += "IPRINT(";
 			if (debug) System.out.println("Checking M_print");
@@ -537,6 +544,75 @@ public class SymbolChecker {
 	}
 	
 	/**
+	 * Insert a var defined in node to symbol table
+	 * @param st SymbolTable
+	 * @param n Node - must have name "M_var"
+	 * @throws SymbolException
+	 */
+	private void insertVar(SymbolTable st, Node n) throws SymbolException {
+		if (debug) System.out.println("Checking M_var");
+		String id = n.children.get(0).toString();
+		int type = check_M_type((Node)n.children.get(2));
+		int dim = 0;
+		n = (Node)n.children.get(1);
+		ArrayList<String> l = new ArrayList<String>();
+		while (n.children.size() > 0) { 
+			tmpS = "";
+			if (!pushToTmpS) tmpS = "";
+			pushToTmpS = true;
+			if (check_M_expr(st, (Node)n.children.get(0)) != sym.INT) throw new SymbolException("Symbol Error: array index must int");
+			dim ++;
+			n = (Node)n.children.get(1);
+			pushToTmpS = false;
+			l.add(tmpS);
+			tmpS = "";
+		}
+		if (debug) System.out.println("Adding "+id+" to st["+st.scope_name+"]");
+		if (debug) System.out.println(st);
+		SymbolTable.insertSymbol(st, id, type, dim);
+		VarSymbol v = (VarSymbol)SymbolTable.getSymbol(st, id);
+		for (int i = 0; i < dim; i ++) v.dimensionsIR[i] = l.get(i);
+		if (debug) System.out.println(st);
+	}
+	
+	/**
+	 * Insert a fun symbol defined in node n
+	 * @param st SymbolTable
+	 * @param n Node - must have name "M_fun"
+	 * @throws SymbolException
+	 */
+	private void insertFun(SymbolTable st, Node n) throws SymbolException {
+		if (debug) System.out.println("Checking M_fun");
+		String name = n.children.get(0).toString();
+		int returnType = check_M_type((Node)n.children.get(2));
+		if (st.symbols.contains(name)) throw new SymbolException("Symbol Error: "+name+" already declared");
+		String fun_lable = "FUN"+SymbolTable.fun_lable_counter;
+		FunSymbol s = new FunSymbol(name, fun_lable, returnType);
+		SymbolTable.fun_lable_counter ++;		
+		// Parsing function params
+		Node paramN = (Node)n.children.get(1);
+		paramN = (Node)paramN.children.get(0);
+		while (paramN.children.size() > 0) {
+			if (debug) System.out.println("Checking M_fun params");
+			Node next = (Node)paramN.children.get(1);
+			paramN = (Node)paramN.children.get(0);
+			String id = paramN.children.get(0).toString();
+			int type = check_M_type((Node)paramN.children.get(2));
+			int dims = 0;
+			Node dimN = (Node)paramN.children.get(1);
+			while (dimN.children.size() > 0) {
+				dims ++;
+				dimN = (Node)dimN.children.get(0);
+			}
+			Param p = new Param(type, dims);
+			s.addParam(p);
+			paramN = next;
+		}
+		SymbolTable.insertSymbol(st, s);
+
+	}
+	
+	/**
 	 * Checking M_decl. curr_node must be one of "M_decl" non-terminals
 	 * @param st SymbolTable
 	 * @return SymbolTable (may or may not be the same as input SymbolTable)
@@ -547,6 +623,29 @@ public class SymbolChecker {
 		// M_decls
 		if (n.name.equals("M_decls")) {
 			if (debug) System.out.println("Checking M_decls");
+			Node declN = (Node)n.children.get(0);
+			Node decls = (Node)n.children.get(1);
+			declN = (Node)declN.children.get(0);
+			// I have to insert all symbols defined in current block first
+			// in order to make "mutually recursive functions" work
+			if (declN.name == "M_var") {
+				if (!st.completed) insertVar(st, declN);
+			}
+			else {
+				if (!st.completed)insertFun(st, declN);
+			}
+			while (decls.children.size()> 0) {
+				declN = (Node)decls.children.get(0);
+				decls = (Node)decls.children.get(1);
+				declN = (Node)declN.children.get(0);
+				if (declN.name == "M_var") {
+					if (!st.completed)insertVar(st, declN);
+				}
+				else {
+					if (!st.completed)insertFun(st, declN);
+				}
+			}
+			st.completed = true;
 			SymbolTable st1 = check_M_decl(st, (Node)n.children.get(0));
 			st1 = check_M_decl(st1, (Node)n.children.get(1));
 			return st1;
@@ -563,43 +662,15 @@ public class SymbolChecker {
 			return st1;
 			
 		}
-		// Inserting variables into current SymbolTable
-		if (n.name.equals("M_var")) {
-			if (debug) System.out.println("Checking M_var");
-			String id = n.children.get(0).toString();
-			int type = check_M_type((Node)n.children.get(2));
-			int dim = 0;
-			n = (Node)n.children.get(1);
-			ArrayList<String> l = new ArrayList<String>();
-			while (n.children.size() > 0) { 
-				tmpS = "";
-				pushToTmpS = true;
-				if (check_M_expr(st, (Node)n.children.get(0)) != sym.INT) throw new SymbolException("Symbol Error: array index must int");
-				dim ++;
-				n = (Node)n.children.get(1);
-				pushToTmpS = false;
-				l.add(tmpS);
-				tmpS = "";
-			}
-			if (debug) System.out.println("Adding "+id+" to st["+st.scope_name+"]");
-			if (debug) System.out.println(st);
-			SymbolTable.insertSymbol(st, id, type, dim);
-			VarSymbol v = (VarSymbol)SymbolTable.getSymbol(st, id);
-			for (int i = 0; i < dim; i ++) v.dimensionsIR[i] = l.get(i);
-			if (debug) System.out.println(st);
-			return st;
-		}
-		// Inserting functions into current SymbolTable
+		// Function already inserted into symbol table st at this point, now go into the function block
 		if (n.name.equals("M_fun")) {
 			if (debug) System.out.println("Checking M_fun");
 			addToString("IFUN \n\t(");
 			String name = n.children.get(0).toString();
 			int returnType = check_M_type((Node)n.children.get(2));
-			if (st.symbols.contains(name)) throw new SymbolException("Symbol Error: "+name+" already declared");
-			String fun_lable = "FUN"+SymbolTable.fun_lable_counter;
+			FunSymbol s = (FunSymbol)SymbolTable.getSymbol(st, name);
+			String fun_lable = s.lable;
 			addToString("\""+fun_lable+"\"\n\t,");
-			FunSymbol s = new FunSymbol(name, fun_lable, returnType);
-			SymbolTable.fun_lable_counter ++;
 			
 			// Each function must have it's own seperate SymbolTable
 			SymbolTable funSt = st.insertST(name);
@@ -621,12 +692,9 @@ public class SymbolChecker {
 					dimN = (Node)dimN.children.get(0);
 				}
 				Param p = new Param(type, dims);
-				s.addParam(p);
 				SymbolTable.insertSymbol(funSt, p, id);
 				paramN = next;
 			}
-			
-			SymbolTable.insertSymbol(st, s);
 			// go inside the function body
 			check_F_block(funSt, (Node)n.children.get(3));
 			addToString("\n\t)\n");

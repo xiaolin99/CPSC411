@@ -23,6 +23,8 @@ public class SymbolTable {
 	// nextLevel points to the parent SymbolTable of this table
 	public SymbolTable nextLevel;
 	
+	public boolean completed = false;
+	
 	/**
 	 * Constructor - pass in scope name
 	 * @param name
