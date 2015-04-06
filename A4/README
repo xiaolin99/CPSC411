@@ -43,7 +43,7 @@ To Run:
 2. make sure to have execute permission of "run_parser.sh"
 3. run
 ./run_parser.sh $PATH_TO_TESTFILE
-(the AST tree will be printed to stdout)
+(the AST tree and IR will be printed to stdout)
 
 -----------------------------------------------------------------------------
 

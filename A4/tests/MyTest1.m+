@@ -1,0 +1,21 @@
+/* working code - test nested functions */
+var x:int;
+fun a(a1:int):int {
+	fun b(b1:int):int {
+		fun c(c1:int):int {
+			begin
+			return c1+1;
+			end
+		};
+		begin
+		return c(x)+b1;
+		end
+	};
+	begin
+	return b(x)+a1;
+	end
+};
+begin
+read x;
+print a(x);
+end

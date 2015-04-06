@@ -1,0 +1,10 @@
+/* non-working code - return the wrong type in a function */
+fun a():int {
+	var x:real;
+	begin
+	return x;
+	end
+};
+begin
+print a();
+end

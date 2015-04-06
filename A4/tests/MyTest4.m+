@@ -1,0 +1,10 @@
+/* non-working code - attempt to pass incorrect number of params into a function */
+var a:int;
+fun x(a:int, b:int):int {
+begin
+return 1;
+end
+};
+begin
+print x(a);
+end

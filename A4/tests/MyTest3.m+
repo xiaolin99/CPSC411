@@ -1,0 +1,15 @@
+/* Working code - mutually recursive function
+code of course won't run correctly, but it should pass semantics check */
+fun y(a:real):int {
+	begin
+	return x(a);
+	end
+};
+fun x(a:real):int {
+	begin
+	return y(a)+x(a);
+	end
+};
+begin
+print x(1.0);
+end

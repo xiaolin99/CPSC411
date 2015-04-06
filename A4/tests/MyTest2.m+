@@ -1,0 +1,10 @@
+/* Working code - test 3d array */
+var a[1][2][3]:int;
+fun x(b[][][]:int):int {
+	begin
+	return b[0][0][0];
+	end
+};
+begin
+print x(a);
+end
