@@ -1,3 +1,4 @@
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 /**
@@ -17,6 +18,7 @@ public class SymbolChecker {
 	String str;
 	String tmpS;
 	boolean pushToTmpS = false;;
+	PrintWriter AM;
 	
 	/**
 	 * block counter for code blocks
@@ -27,10 +29,11 @@ public class SymbolChecker {
 	 * Constructor - pass in the start AST node
 	 * @param start
 	 */
-	public SymbolChecker(Node start) {
+	public SymbolChecker(Node start, PrintWriter f) {
 		this.start = start;
 		str = "";
 		tmpS += "";
+		AM = f;
 	}
 
 	/**
@@ -43,9 +46,11 @@ public class SymbolChecker {
 			if (debug) System.out.println("Starting from M_prog");
 			SymbolTable st = new SymbolTable("M_prog");
 			Node n = (Node)start.children.get(0);
+			AM.println("/tJUMP M_PROG");
 			addToString("IPROG (\n");
 			addToString("[");
 			st = check_M_decl(st, (Node)n.children.get(0));
+			
 			addToString("]\n,");
 			addToString(st.num_vars + "\n,[");
 			ArrayList<VarSymbol> l = SymbolTable.getArrays(st);
@@ -62,9 +67,14 @@ public class SymbolChecker {
 				i ++;
 			}
 			addToString("]\n,");
+			AM.println("M_PROG:");
+			AM.println("\tLOAD_R %sp");
+			AM.println("\tLOAD_R %sp");
+			AM.println("\tLOAD_R %fp");
+			AM.println("\tALLOC "+st.num_vars);
 			check_M_stmt(st, (Node)n.children.get(1));
 			addToString(")\n");
-			
+			AM.println("\tHALT");
 			System.out.println("Intermediate Representation: ");
 			System.out.println(str);
 		}
@@ -145,14 +155,17 @@ public class SymbolChecker {
 		Node n = curr_node;
 		if (n.name.equals("M_ival")) {
 			addToString("IINT "+n.children.get(0).toString());
+			AM.println("\tSTORE_I "+n.children.get(0).toString());
 			return sym.INT;
 		}
 		if (n.name.equals("M_rval")) {
 			addToString("IREAL "+n.children.get(0).toString());
+			AM.println("\tSTORE_F "+n.children.get(0).toString());
 			return sym.REAL;
 		}
 		if (n.name.equals("M_bval")) {
 			addToString("IBOOL "+n.children.get(0).toString());
+			AM.println("\tSTORE_B "+n.children.get(0).toString());
 			return sym.BOOL;
 		}
 		// check M_size
@@ -197,6 +210,9 @@ public class SymbolChecker {
 				}
 				if (n.children.size() > 0) throw new SymbolException("Symbol Error: too many args in function "+id);
 				addToString(")");
+				AM.println("\tALLOC 1");
+				AM.println("\tLOAD_R %fp");
+				int l = 0;
 				return returnType;
 			}
 			// check variable
@@ -209,6 +225,9 @@ public class SymbolChecker {
 				n = (Node)n.children.get(0);
 				// variable may be an array
 				int dim = check_Array_Index(st, n);
+				// todo - array
+				AM.println("\tLOAD_R %fp");
+				AM.println("\tLOAD_O "+v.offset);
 				addToString(")");
 				return v.type;
 				
@@ -461,11 +480,23 @@ public class SymbolChecker {
 			MySymbol s = SymbolTable.getSymbol(st, id);
 			if (! (s instanceof VarSymbol)) throw new SymbolException("Symbol Error: "+id+" is not var");
 			VarSymbol v = (VarSymbol)s;
-			if (v.type == sym.INT) addToString("_I");
-			else if (v.type == sym.REAL) addToString("_F");
-			else addToString("_B");
+			if (v.type == sym.INT) {
+				addToString("_I");
+				AM.println("\tREAD_I");
+			}
+			else if (v.type == sym.REAL) {
+				addToString("_F");
+				AM.println("\tREAD_F");
+			}
+			else {
+				addToString("_B");
+				AM.println("\tREAD_B");
+			}
 			addToString("("+v.level+","+v.offset+", ");
-			check_Array_Index(st, (Node)n.children.get(1));
+			int dim = check_Array_Index(st, (Node)n.children.get(1));
+			// todo array
+			AM.println("\tLOAD_R %fp");
+			AM.println("\tSTORE_O "+v.offset);
 			addToString(")");
 			return 0;
 		}

@@ -384,9 +384,21 @@ public class parser extends java_cup.runtime.lr_parser {
 
       System.out.println(astString);
       
-      SymbolChecker sc = new SymbolChecker(start);
-      if (sc.checkSyntax()) System.out.println("Semantics are good");
-      else System.out.println("Semantics are not good");
+      String amFileName = args[0].replace(".m+", ".am");
+      File amFile = new File(amFileName);
+      PrintWriter AM = new PrintWriter(amFile);
+      
+      SymbolChecker sc = new SymbolChecker(start, AM);
+      if (sc.checkSyntax()) {
+    	  System.out.println("Semantics are good");
+    	  AM.close();
+    	  System.out.println("AM file created: "+amFileName);
+      }
+      else {
+    	  System.out.println("Semantics are not good");
+    	  AM.close();
+    	  amFile.delete();
+      }
     }
     catch (Exception e) {
 		e.printStackTrace();
