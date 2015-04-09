@@ -166,17 +166,17 @@ public class SymbolChecker {
 		Node n = curr_node;
 		if (n.name.equals("M_ival")) {
 			addToString("IINT "+n.children.get(0).toString());
-			AM.println("\tSTORE_I "+n.children.get(0).toString());
+			AM.println("\tLOAD_I "+n.children.get(0).toString());
 			return sym.INT;
 		}
 		if (n.name.equals("M_rval")) {
 			addToString("IREAL "+n.children.get(0).toString());
-			AM.println("\tSTORE_F "+n.children.get(0).toString());
+			AM.println("\tLOAD_F "+n.children.get(0).toString());
 			return sym.REAL;
 		}
 		if (n.name.equals("M_bval")) {
 			addToString("IBOOL "+n.children.get(0).toString());
-			AM.println("\tSTORE_B "+n.children.get(0).toString());
+			AM.println("\tLOAD_B "+n.children.get(0).toString());
 			return sym.BOOL;
 		}
 		// check M_size
