@@ -323,10 +323,10 @@ public class SymbolChecker {
 			}
 			else if (type1 == sym.INT && type2 == sym.INT) {
 				if (n.children.get(1).toString().contains("div")) {
-					AM.println("\tAPP DIV_F");
+					AM.println("\tAPP DIV");
 				}
 				else {
-					AM.println("\tAPP MUL_F");
+					AM.println("\tAPP MUL");
 				}
 				pushToTmpS = savedState;
 				if (!pushToTmpS) { addToString(tmpS); tmpS = "";}
