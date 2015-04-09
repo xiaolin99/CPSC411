@@ -19,7 +19,7 @@ public class FunSymbol extends MySymbol {
 	 */
 	public FunSymbol(String name, String lable, int type) {
 		super(name);
-		this.lable = lable;
+		this.lable = lable.toLowerCase();
 		this.return_type = type;
 		param_list = new ArrayList<Param>();
 	}

@@ -47,7 +47,7 @@ public class SymbolChecker {
 			if (debug) System.out.println("Starting from M_prog");
 			SymbolTable st = new SymbolTable("M_prog");
 			Node n = (Node)start.children.get(0);
-			AM.println("\tJUMP M_PROG");
+			AM.println("\tJUMP mprog");
 			addToString("IPROG (\n");
 			addToString("[");
 			st = check_M_decl(st, (Node)n.children.get(0));
@@ -68,10 +68,10 @@ public class SymbolChecker {
 				i ++;
 			}
 			addToString("]\n,");
-			AM.println("M_PROG:");
+			AM.println("mprog:");
 			AM.println("\tLOAD_R %sp");
 			AM.println("\tLOAD_R %sp");
-			AM.println("\tLOAD_R %fp");
+			AM.println("\tSTORE_R %fp");
 			AM.println("\tALLOC "+st.num_vars);
 			check_M_stmt(st, (Node)n.children.get(1));
 			addToString(")\n");
@@ -557,8 +557,8 @@ public class SymbolChecker {
 		if (n.name.equals("M_while")) {
 			addToString("ICOND(");
 			if (debug) System.out.println("Checking M_while");
-			String l1 = "LOOP"+getLCounter();
-			String l2 = "LOOP"+getLCounter();
+			String l1 = "loop"+getLCounter();
+			String l2 = "loop"+getLCounter();
 			AM.println(l1+":");
 			if (check_M_expr(st, (Node)n.children.get(0)) != sym.BOOL)  throw new SymbolException("Symbol Error: while statement expects a bool - "+curr_node.toString());
 			AM.println("\tJUMP_C "+l2);
@@ -606,8 +606,8 @@ public class SymbolChecker {
 		// Checking if stmt
 		if (n.name.equals("M_cond")) {
 			if (debug) System.out.println("Checking M_cond");
-			String l1 = "COND"+getLCounter();
-			String l2 = "COND"+getLCounter();
+			String l1 = "cond"+getLCounter();
+			String l2 = "cond"+getLCounter();
 			addToString("ICOND(");
 			if (check_M_expr(st, (Node)n.children.get(0)) != sym.BOOL)  throw new SymbolException("Symbol Error: if statement expects a bool - "+curr_node.toString());
 			addToString(", ");
@@ -912,7 +912,7 @@ public class SymbolChecker {
 		AM.println("\tLOAD_R %fp");
 		AM.println("\tSTORE_O "+(-st.num_args-2));
 		
-		AM.println("\tLOAT_R %fp");
+		AM.println("\tLOAD_R %fp");
 		AM.println("\tLOAD_O "+(st.num_vars+1));
 		AM.println("\tAPP NEG");
 		AM.println("\tALLOC_S");
