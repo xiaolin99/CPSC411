@@ -47,7 +47,7 @@ public class SymbolChecker {
 			if (debug) System.out.println("Starting from M_prog");
 			SymbolTable st = new SymbolTable("M_prog");
 			Node n = (Node)start.children.get(0);
-			AM.println("/tJUMP M_PROG");
+			AM.println("\tJUMP M_PROG");
 			addToString("IPROG (\n");
 			addToString("[");
 			st = check_M_decl(st, (Node)n.children.get(0));
@@ -245,6 +245,11 @@ public class SymbolChecker {
 				int dim = check_Array_Index(st, n);
 				// todo - array
 				AM.println("\tLOAD_R %fp");
+				int l = 0;
+				while (l < s.level) {
+					AM.println("\tLOAD_O -2");
+					l ++;
+				}
 				AM.println("\tLOAD_O "+v.offset);
 				addToString(")");
 				return v.type;
@@ -539,6 +544,11 @@ public class SymbolChecker {
 			
 			if (leftType != rightType) throw new SymbolException("Symbol Error: type mismatch in assignment - "+curr_node.toString());
 			AM.println("\tLOAD_R %fp");
+			int l = 0;
+			while (l < s.level) {
+				AM.println("\tLOAD_O -2");
+				l ++;
+			}
 			AM.println("\tSTORE_O "+v.offset);
 			addToString(")");
 			return 0;
@@ -584,6 +594,11 @@ public class SymbolChecker {
 			int dim = check_Array_Index(st, (Node)n.children.get(1));
 			// todo array
 			AM.println("\tLOAD_R %fp");
+			int l = 0;
+			while (l < s.level) {
+				AM.println("\tLOAD_O -2");
+				l ++;
+			}
 			AM.println("\tSTORE_O "+v.offset);
 			addToString(")");
 			return 0;
@@ -632,7 +647,19 @@ public class SymbolChecker {
 				i ++;
 			}
 			addToString("]\n\t,");
+			AM.println("\tLOAD_R %fp");
+			AM.println("\tALLOC 2");
+			AM.println("\tLOAD_R %sp");
+			AM.println("\tSTORE_R %fp");
+			AM.println("\tALLOC "+st1.num_vars);
+			AM.println("\tLOAD_I "+(st1.num_args+3));
+			// todo alloc arrays
 			check_M_stmt(st1, (Node)n.children.get(1));
+			AM.println("\tLOAD_R %fp");
+			AM.println("\tLOAD_O "+(st1.num_vars+1));
+			AM.println("\tAPP NEG");
+			AM.println("\tALLOC_S");
+			AM.println("\tSTORE_R %fp");
 			addToString(")");
 			return 0;
 		}
@@ -814,6 +841,9 @@ public class SymbolChecker {
 			// Parsing function params
 			Node paramN = (Node)n.children.get(1);
 			paramN = (Node)paramN.children.get(0);
+			// have to reverse the order of params
+			ArrayList<Param> pList = new ArrayList<Param>();
+			ArrayList<String> pNameList = new ArrayList<String>();
 			while (paramN.children.size() > 0) {
 				if (debug) System.out.println("Checking M_fun params");
 				Node next = (Node)paramN.children.get(1);
@@ -826,11 +856,15 @@ public class SymbolChecker {
 					dims ++;
 					dimN = (Node)dimN.children.get(0);
 				}
-				Param p = new Param(type, dims);
-				SymbolTable.insertSymbol(funSt, p, id);
+				pList.add(new Param(type, dims));
+				pNameList.add(new String(id));
 				paramN = next;
 			}
+			for (int i = pList.size()-1; i >= 0; i --) {
+				SymbolTable.insertSymbol(funSt, pList.get(i), pNameList.get(i));
+			}
 			// go inside the function body
+			AM.println(s.lable+":");
 			check_F_block(funSt, (Node)n.children.get(3));
 			addToString("\n\t)\n");
 			return st;
@@ -866,7 +900,6 @@ public class SymbolChecker {
 			i ++;
 		}
 		addToString("]\n\t,");
-		AM.println(st.scope_name+":");
 		AM.println("\tLOAD_R %sp");
 		AM.println("\tSTORE_R %fp");
 		AM.println("\tALLOC "+st.num_vars);
@@ -886,10 +919,8 @@ public class SymbolChecker {
 		
 		AM.println("\tSTORE_R %fp");
 		
-		AM.println("ALLOC -"+st.num_args);
-		AM.println("JUMP_S");
-		AM.println("ALLOC ")
-		
+		AM.println("\tALLOC -"+st.num_args);
+		AM.println("\tJUMP_S");		
 		
 		
 	}
