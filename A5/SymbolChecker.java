@@ -19,6 +19,7 @@ public class SymbolChecker {
 	String tmpS;
 	boolean pushToTmpS = false;;
 	PrintWriter AM;
+	int lCounter = 0;
 	
 	/**
 	 * block counter for code blocks
@@ -74,6 +75,7 @@ public class SymbolChecker {
 			AM.println("\tALLOC "+st.num_vars);
 			check_M_stmt(st, (Node)n.children.get(1));
 			addToString(")\n");
+			AM.println("\tALLOC -"+(st.num_vars+1));
 			AM.println("\tHALT");
 			System.out.println("Intermediate Representation: ");
 			System.out.println(str);
@@ -83,6 +85,15 @@ public class SymbolChecker {
 			return false;
 		}
 		return true;
+	}
+	
+	/**
+	 * Function to increment and return label counter
+	 * @return
+	 */
+	private int getLCounter() {
+		lCounter ++;
+		return lCounter;
 	}
 	
 	/**
@@ -213,6 +224,13 @@ public class SymbolChecker {
 				AM.println("\tALLOC 1");
 				AM.println("\tLOAD_R %fp");
 				int l = 0;
+				while(l < s.level) {
+					AM.println("\tLOAD_O -2");
+					l ++;
+				}
+				AM.println("\tLOAD_R %fp");
+				AM.println("\tLOAD_R %cp");
+				AM.println("\tJUMP "+s.lable);
 				return returnType;
 			}
 			// check variable
@@ -247,13 +265,25 @@ public class SymbolChecker {
 			int type2 = check_M_expr(st, (Node)n.children.get(2));
 			tmpS += "])";
 			if (type1 == sym.REAL && type2 == sym.REAL) {
-				if (n.children.get(1).toString().contains("sub")) tmpS = tmpS.replaceFirst("ISUB", "ISUB_F");
-				else tmpS = tmpS.replaceFirst("IADD", "IADD_F");
+				if (n.children.get(1).toString().contains("sub")) {
+					tmpS = tmpS.replaceFirst("ISUB", "ISUB_F");
+					AM.println("\tAPP SUB_F");
+				}
+				else {
+					tmpS = tmpS.replaceFirst("IADD", "IADD_F");
+					AM.println("\tAPP ADD_F");
+				}
 				pushToTmpS = savedState;
 				if (!pushToTmpS) { addToString(tmpS); tmpS = "";}
 				return sym.REAL;
 			}
 			else if (type1 == sym.INT && type2 == sym.INT) {
+				if (n.children.get(1).toString().contains("sub")) {
+					AM.println("\tAPP SUB");
+				}
+				else {
+					AM.println("\tAPP ADD");
+				}
 				pushToTmpS = savedState;
 				if (!pushToTmpS) { addToString(tmpS); tmpS = "";}
 				return sym.INT;
@@ -274,13 +304,25 @@ public class SymbolChecker {
 			int type2 = check_M_expr(st, (Node)n.children.get(2));
 			tmpS += "])";
 			if (type1 == sym.REAL && type2 == sym.REAL) {
-				if (n.children.get(1).toString().contains("div")) tmpS = tmpS.replaceFirst("IDIV", "IDIV_F");
-				else tmpS = tmpS.replaceFirst("IMUL", "IMUL_F");
+				if (n.children.get(1).toString().contains("div")) {
+					tmpS = tmpS.replaceFirst("IDIV", "IDIV_F");
+					AM.println("\tAPP DIV_F");
+				}
+				else {
+					tmpS = tmpS.replaceFirst("IMUL", "IMUL_F");
+					AM.println("\tAPP MUL_F");
+				}
 				pushToTmpS = savedState;
 				if (!pushToTmpS) { addToString(tmpS); tmpS = "";}
 				return sym.REAL;
 			}
 			else if (type1 == sym.INT && type2 == sym.INT) {
+				if (n.children.get(1).toString().contains("div")) {
+					AM.println("\tAPP DIV_F");
+				}
+				else {
+					AM.println("\tAPP MUL_F");
+				}
 				pushToTmpS = savedState;
 				if (!pushToTmpS) { addToString(tmpS); tmpS = "";}
 				return sym.INT;
@@ -297,12 +339,14 @@ public class SymbolChecker {
 			int type1 = check_M_expr(st, (Node)n.children.get(0));
 			tmpS += "])";
 			if (type1 == sym.REAL) {
-				tmpS = tmpS.replaceFirst("INEG", "INEGL_F");
+				tmpS = tmpS.replaceFirst("INEG", "INEG_F");
+				AM.println("\tAPP NEG_F");
 				pushToTmpS = savedState;
 				if (!pushToTmpS) { addToString(tmpS); tmpS = "";}
 				return type1;
 			}
 			else if (type1 == sym.INT) {
+				AM.println("\tAPP NEG");
 				pushToTmpS = savedState;
 				if (!pushToTmpS) { addToString(tmpS); tmpS = "";}
 				return type1;
@@ -326,16 +370,46 @@ public class SymbolChecker {
 			int type2 = check_M_expr(st, (Node)n.children.get(2));
 			tmpS += "])";
 			if (type1 == sym.REAL && type2 == sym.REAL) {
-				if (n.children.get(1).toString().contains("lt")) tmpS = tmpS.replaceFirst("ILT", "ILT_F");
-				else if (n.children.get(1).toString().contains("le")) tmpS = tmpS.replaceFirst("ILE", "ILE_F");
-				else if (n.children.get(1).toString().contains("gt")) tmpS = tmpS.replaceFirst("IGT", "IGT_F");
-				else if (n.children.get(1).toString().contains("ge")) tmpS = tmpS.replaceFirst("IGE", "IGE_F");
-				else tmpS = tmpS.replaceFirst("IEQ", "IEQ_F");
+				if (n.children.get(1).toString().contains("lt")) {
+					tmpS = tmpS.replaceFirst("ILT", "ILT_F");
+					AM.println("\tAPP LT_F");
+				}
+				else if (n.children.get(1).toString().contains("le")){
+					tmpS = tmpS.replaceFirst("ILE", "ILE_F");
+					AM.println("\tAPP LE_F");
+				}
+				else if (n.children.get(1).toString().contains("gt")) {
+					tmpS = tmpS.replaceFirst("IGT", "IGT_F");
+					AM.println("\tAPP GT_F");
+				}
+				else if (n.children.get(1).toString().contains("ge")) {
+					tmpS = tmpS.replaceFirst("IGE", "IGE_F");
+					AM.println("\tAPP GE_F");
+				}
+				else {
+					tmpS = tmpS.replaceFirst("IEQ", "IEQ_F");
+					AM.println("\tAPP EQ_F");
+				}
 				pushToTmpS = savedState;
 				if (!pushToTmpS) { addToString(tmpS); tmpS = "";}
 				return sym.BOOL;
 			}
 			else if (type1 == sym.INT && type2 == sym.INT) {
+				if (n.children.get(1).toString().contains("lt")) {
+					AM.println("\tAPP LT");
+				}
+				else if (n.children.get(1).toString().contains("le")){
+					AM.println("\tAPP LE");
+				}
+				else if (n.children.get(1).toString().contains("gt")) {
+					AM.println("\tAPP GT");
+				}
+				else if (n.children.get(1).toString().contains("ge")) {
+					AM.println("\tAPP GE");
+				}
+				else {
+					AM.println("\tAPP EQ");
+				}
 				pushToTmpS = savedState;
 				if (!pushToTmpS) { addToString(tmpS); tmpS = "";}
 				return sym.BOOL;
@@ -349,6 +423,7 @@ public class SymbolChecker {
 			int type1 = check_M_expr(st, (Node)n.children.get(0));
 			addToString("])");
 			if (type1 == sym.BOOL) {
+				AM.println("\tAPP NOT");
 				return type1;
 			}
 			else  throw new SymbolException("Symbol Error: NOT cannot be used for "+n.toString());
@@ -362,6 +437,7 @@ public class SymbolChecker {
 			int type2 = check_M_expr(st, (Node)n.children.get(1));
 			addToString("])");
 			if (type1 == sym.BOOL && type2 == sym.BOOL) {
+				AM.println("\tAPP OR");
 				return sym.BOOL;
 			}
 			else  throw new SymbolException("Symbol Error: OR cannot be used for "+n.toString());
@@ -375,6 +451,7 @@ public class SymbolChecker {
 			int type2 = check_M_expr(st, (Node)n.children.get(1));
 			addToString("])");
 			if (type1 == sym.BOOL && type2 == sym.BOOL) {
+				AM.println("\tAPP AND");
 				return sym.BOOL;
 			}
 			else  throw new SymbolException("Symbol Error: AND cannot be used for "+n.toString());
@@ -386,6 +463,7 @@ public class SymbolChecker {
 			int type1 = check_M_expr(st, (Node)n.children.get(0));
 			addToString("])");
 			if (type1 == sym.INT) {
+				AM.println("\tAPP FLOAT");
 				return sym.FLOAT;
 			}
 			else  throw new SymbolException("Symbol Error: FLOAT cannot be used for "+n.toString());
@@ -397,6 +475,7 @@ public class SymbolChecker {
 			int type1 = check_M_expr(st, (Node)n.children.get(0));
 			addToString("])");
 			if (type1 == sym.FLOAT) {
+				AM.println("\tAPP FLOOR");
 				return sym.INT;
 			}
 			else  throw new SymbolException("Symbol Error: FLOOR cannot be used for "+n.toString());
@@ -408,6 +487,7 @@ public class SymbolChecker {
 			int type1 = check_M_expr(st, (Node)n.children.get(0));
 			addToString("])");
 			if (type1 == sym.FLOAT) {
+				AM.println("\tAPP CEIL");
 				return sym.INT;
 			}
 			else  throw new SymbolException("Symbol Error: CEIL cannot be used for "+n.toString());
@@ -458,6 +538,8 @@ public class SymbolChecker {
 			int leftType = v.type;
 			
 			if (leftType != rightType) throw new SymbolException("Symbol Error: type mismatch in assignment - "+curr_node.toString());
+			AM.println("\tLOAD_R %fp");
+			AM.println("\tSTORE_O "+v.offset);
 			addToString(")");
 			return 0;
 		}
@@ -465,9 +547,15 @@ public class SymbolChecker {
 		if (n.name.equals("M_while")) {
 			addToString("ICOND(");
 			if (debug) System.out.println("Checking M_while");
+			String l1 = "LOOP"+getLCounter();
+			String l2 = "LOOP"+getLCounter();
+			AM.println(l1+":");
 			if (check_M_expr(st, (Node)n.children.get(0)) != sym.BOOL)  throw new SymbolException("Symbol Error: while statement expects a bool - "+curr_node.toString());
+			AM.println("\tJUMP_C "+l2);
 			addToString(", ");
 			check_M_stmt(st, (Node)n.children.get(1));
+			AM.println("\tJUMP "+l1);
+			AM.println(l2+":");
 			addToString(")");
 			return 0;
 		}
@@ -503,12 +591,18 @@ public class SymbolChecker {
 		// Checking if stmt
 		if (n.name.equals("M_cond")) {
 			if (debug) System.out.println("Checking M_cond");
+			String l1 = "COND"+getLCounter();
+			String l2 = "COND"+getLCounter();
 			addToString("ICOND(");
 			if (check_M_expr(st, (Node)n.children.get(0)) != sym.BOOL)  throw new SymbolException("Symbol Error: if statement expects a bool - "+curr_node.toString());
 			addToString(", ");
+			AM.println("\tJUMP_C "+l1);
 			check_M_stmt(st, (Node)n.children.get(1));
+			AM.println("\tJUMP "+l2);
 			addToString(", ");
+			AM.println(l1+":");
 			check_M_stmt(st, (Node)n.children.get(2));
+			AM.println(l2+":");
 			addToString(")");
 			return 0;
 		}
@@ -551,9 +645,18 @@ public class SymbolChecker {
 			if (debug) System.out.println("Checking M_print");
 			int type = check_M_expr(st, (Node)n.children.get(0));
 			tmpS += ")";
-			if (type == sym.INT) tmpS = tmpS.replaceFirst("IPRINT", "IPRINT_I");
-			else if (type == sym.REAL) tmpS = tmpS.replaceFirst("IPRINT", "IPRINT_F");
-			else tmpS = tmpS.replaceFirst("IPRINT", "IPRINT_B");
+			if (type == sym.INT) {
+				tmpS = tmpS.replaceFirst("IPRINT", "IPRINT_I");
+				AM.println("\tPRINT_I");
+			}
+			else if (type == sym.REAL) {
+				tmpS = tmpS.replaceFirst("IPRINT", "IPRINT_F");
+				AM.println("\tPRINT_F");
+			}
+			else {
+				tmpS = tmpS.replaceFirst("IPRINT", "IPRINT_B");
+				AM.println("\tPRINT_B");
+			}
 			pushToTmpS = savedState;
 			if (!pushToTmpS) { addToString(tmpS); tmpS = "";}
 			return 0;
@@ -567,6 +670,8 @@ public class SymbolChecker {
 			int returnType = check_M_expr(st, (Node)n.children.get(1));
 			addToString(")");
 			if (returnType != SymbolTable.getReturnType(st, id))  throw new SymbolException("Symbol Error: return type mismatch in function "+id);
+			AM.println("\tLOAD_R %fp");
+			AM.println("\tSTORE_O "+(-st.num_args-3));
 			return 0;
 		}
 		// do nothing on episilon
@@ -702,7 +807,6 @@ public class SymbolChecker {
 			FunSymbol s = (FunSymbol)SymbolTable.getSymbol(st, name);
 			String fun_lable = s.lable;
 			addToString("\""+fun_lable+"\"\n\t,");
-			
 			// Each function must have it's own seperate SymbolTable
 			SymbolTable funSt = st.insertST(name);
 			funSt.return_type = returnType;
@@ -762,7 +866,32 @@ public class SymbolChecker {
 			i ++;
 		}
 		addToString("]\n\t,");
+		AM.println(st.scope_name+":");
+		AM.println("\tLOAD_R %sp");
+		AM.println("\tSTORE_R %fp");
+		AM.println("\tALLOC "+st.num_vars);
+		AM.println("\tLOAD_I "+(st.num_vars+2)); // de-alloc, should be negative
+		// todo array
 		check_M_stmt(st, (Node)curr_node.children.get(1));
+		
+		AM.println("\tLOAD_R %fp");
+		AM.println("\tLOAD_O 0");
+		AM.println("\tLOAD_R %fp");
+		AM.println("\tSTORE_O "+(-st.num_args-2));
+		
+		AM.println("\tLOAT_R %fp");
+		AM.println("\tLOAD_O "+(st.num_vars+1));
+		AM.println("\tAPP NEG");
+		AM.println("\tALLOC_S");
+		
+		AM.println("\tSTORE_R %fp");
+		
+		AM.println("ALLOC -"+st.num_args);
+		AM.println("JUMP_S");
+		AM.println("ALLOC ")
+		
+		
+		
 	}
 
 }
