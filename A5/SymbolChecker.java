@@ -290,7 +290,7 @@ public class SymbolChecker {
 				// variable may be an array
 				AMLoadVar(v);
 				int dim = check_Array_Index(st, n, v);
-				if (dim != v.dimentions) throw new SymbolException("Symbol Error: "+id+" dimensions mismatch");
+				// if (dim != v.dimentions) throw new SymbolException("Symbol Error: "+id+" dimensions mismatch");
 				if (dim > 0) AM.println("\tLOAD_OS");
 				
 				addToString(")");
@@ -855,7 +855,7 @@ public class SymbolChecker {
 			AM.println("\tLOAD_O "+v.offset);
 			AM.println("\tLOAD_O "+(v.dimentions+1));
 			AM.println("\tAPP ADD");
-			AM.println("\tAPP_ADD");
+			AM.println("\tAPP ADD");
 			AM.println("\tLOAD_R %fp");
 			AM.println("\tSTORE_O "+(st.num_vars+1));
 			AM.println("\tALLOC_S");
