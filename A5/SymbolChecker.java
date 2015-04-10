@@ -836,6 +836,7 @@ public class SymbolChecker {
 			int dim = 1;
 			while (dim < v.dimentionsNode.size()) {
 				if (check_M_expr(st, v.dimentionsNode.get(dim)) != sym.INT) throw new SymbolException("Symbol Error: array size must int");
+				dim ++;
 			}
 			for (dim = 0; dim < v.dimentions; dim ++) {
 				AM.println("\tLOAD_R %fp");
