@@ -692,7 +692,7 @@ public class SymbolChecker {
 			AM.println("\tLOAD_R %sp");
 			AM.println("\tSTORE_R %fp");
 			AM.println("\tALLOC "+st1.num_vars);
-			AM.println("\tLOAD_I "+(st1.num_args+3));
+			AM.println("\tLOAD_I "+(st1.num_vars+3));
 			// todo alloc arrays
 			allocArrays(st1);
 			check_M_stmt(st1, (Node)n.children.get(1));
