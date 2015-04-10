@@ -73,6 +73,7 @@ public class SymbolChecker {
 			AM.println("\tLOAD_R %sp");
 			AM.println("\tSTORE_R %fp");
 			AM.println("\tALLOC "+st.num_vars);
+			allocArrays(st);
 			check_M_stmt(st, (Node)n.children.get(1));
 			addToString(")\n");
 			AM.println("\tALLOC -"+(st.num_vars+1));
@@ -106,6 +107,34 @@ public class SymbolChecker {
 	}
 	
 	/**
+	 * Print am code for loading variable v
+	 * @param v
+	 */
+	private void AMLoadVar(VarSymbol v) {
+		AM.println("\tLOAD_R %fp");
+		int l = 0;
+		while (l < v.level) {
+			AM.println("\tLOAD_O -2");
+			l ++;
+		}
+		AM.println("\tLOAD_O "+v.offset);
+	}
+	
+	/**
+	 * Print am code for storing to variable v
+	 * @param v
+	 */
+	private void AMStoreVar(VarSymbol v) {
+		AM.println("\tLOAD_R %fp");
+		int l = 0;
+		while (l < v.level) {
+			AM.println("\tLOAD_O -2");
+			l ++;
+		}
+		AM.println("\tSTORE_O "+v.offset);
+	}
+	
+	/**
 	 * Get type from a variable name
 	 * @param st SymbolTable
 	 * @param name String
@@ -123,7 +152,7 @@ public class SymbolChecker {
 	 * @return int dimensions
 	 * @throws SymbolException
 	 */
-	private int check_Array_Index(SymbolTable st, Node curr_node) throws SymbolException {
+	private int check_Array_Index(SymbolTable st, Node curr_node, VarSymbol v) throws SymbolException {
 		if (debug) System.out.println("Checking array index" + curr_node.name);
 		addToString("[");
 		int dim = 0;
@@ -134,10 +163,21 @@ public class SymbolChecker {
 		}
 		while (n.children.size() > 0) { 
 			if (check_M_expr(st, (Node)curr_node.children.get(0)) != sym.INT) throw new SymbolException("Symbol Error: array index must int");
+			// trying to calculate the total offset of the array item
+			int i = dim+1;
+			while (i < v.dimentions) {
+				AMLoadVar(v);
+				AM.println("\tLOAD_O "+i);
+				AM.println("\tAPP MUL");
+				i ++;
+			}
+			if (dim > 0) AM.println("\tAPP ADD");
 			addToString(",");
 			n = (Node)n.children.get(1);
 			dim ++;
 		}
+		AM.println("\tLOAD_I "+v.dimentions);
+		AM.println("\tAPP ADD");
 		addToString("]");
 		return dim;
 	}
@@ -186,15 +226,21 @@ public class SymbolChecker {
 			MySymbol s = SymbolTable.getSymbol(st, id);
 			if (! (s instanceof VarSymbol)) throw new SymbolException("Symbol Error: "+id+" is not var");
 			VarSymbol v = (VarSymbol)s;
+			if (v.dimentions == 0)  throw new SymbolException("Symbol Error: M_size "+id+" is not an array");
 			n = (Node)n.children.get(1);
 			int array_dim = 0;
 			while (n.children.size() > 0) {
 				array_dim ++;
 				n = (Node)n.children.get(0);
 			}
-			if (array_dim == 0) throw new SymbolException("Symbol Error: "+id+" is not an array");
-			if (array_dim != v.dimentions) throw new SymbolException("Symbol Error: "+id+" does not have dimension "+array_dim);
+			
+			if (array_dim == 0) throw new SymbolException("Symbol Error: M_size "+id+" needs an dimension");
+			if (array_dim > v.dimentions) throw new SymbolException("Symbol Error: "+id+" does not have dimension "+array_dim);
 			addToString("ISIZE(" + v.level+","+v.offset+","+array_dim+")");
+			array_dim --;
+			AMLoadVar(v);
+			AM.println("\tLOAD_I "+array_dim);
+			AM.println("\tLOAD_OS");
 			return sym.INT;
 			
 		}
@@ -242,15 +288,11 @@ public class SymbolChecker {
 				addToString(" IID("+v.level+","+v.offset+",");
 				n = (Node)n.children.get(0);
 				// variable may be an array
-				int dim = check_Array_Index(st, n);
-				// todo - array
-				AM.println("\tLOAD_R %fp");
-				int l = 0;
-				while (l < s.level) {
-					AM.println("\tLOAD_O -2");
-					l ++;
-				}
-				AM.println("\tLOAD_O "+v.offset);
+				AMLoadVar(v);
+				int dim = check_Array_Index(st, n, v);
+				if (dim != v.dimentions) throw new SymbolException("Symbol Error: "+id+" dimensions mismatch");
+				if (dim > 0) AM.println("\tLOAD_OS");
+				
 				addToString(")");
 				return v.type;
 				
@@ -537,19 +579,19 @@ public class SymbolChecker {
 			if (! (s instanceof VarSymbol)) throw new SymbolException("Symbol Error: "+id+" is not var");
 			VarSymbol v = (VarSymbol)s;
 			addToString(v.level + ","+v.offset+",");
-			check_Array_Index(st, (Node)tmpN.children.get(1));
+			
 			addToString(",");
 			int rightType = check_M_expr(st, (Node)n.children.get(1));
 			int leftType = v.type;
 			
 			if (leftType != rightType) throw new SymbolException("Symbol Error: type mismatch in assignment - "+curr_node.toString());
-			AM.println("\tLOAD_R %fp");
-			int l = 0;
-			while (l < s.level) {
-				AM.println("\tLOAD_O -2");
-				l ++;
+			if (v.dimentions < 1) AMStoreVar(v);
+			else {
+				AMLoadVar(v);
+				int dim = check_Array_Index(st, (Node)tmpN.children.get(1), v);
+				if (dim != v.dimentions) throw new SymbolException("Symbol Error: "+id+" dimensions mismatch");
+				AM.println("\tSTORE_OS");
 			}
-			AM.println("\tSTORE_O "+v.offset);
 			addToString(")");
 			return 0;
 		}
@@ -591,15 +633,13 @@ public class SymbolChecker {
 				AM.println("\tREAD_B");
 			}
 			addToString("("+v.level+","+v.offset+", ");
-			int dim = check_Array_Index(st, (Node)n.children.get(1));
-			// todo array
-			AM.println("\tLOAD_R %fp");
-			int l = 0;
-			while (l < s.level) {
-				AM.println("\tLOAD_O -2");
-				l ++;
+			if (v.dimentions < 1) AMStoreVar(v);
+			else {
+				AMLoadVar(v);
+				int dim = check_Array_Index(st, (Node)n.children.get(1), v);
+				if (dim != v.dimentions) throw new SymbolException("Symbol Error: "+id+" dimensions mismatch");
+				AM.println("\tSTORE_OS");
 			}
-			AM.println("\tSTORE_O "+v.offset);
 			addToString(")");
 			return 0;
 		}
@@ -654,6 +694,7 @@ public class SymbolChecker {
 			AM.println("\tALLOC "+st1.num_vars);
 			AM.println("\tLOAD_I "+(st1.num_args+3));
 			// todo alloc arrays
+			allocArrays(st1);
 			check_M_stmt(st1, (Node)n.children.get(1));
 			AM.println("\tLOAD_R %fp");
 			AM.println("\tLOAD_O "+(st1.num_vars+1));
@@ -719,11 +760,13 @@ public class SymbolChecker {
 		int dim = 0;
 		n = (Node)n.children.get(1);
 		ArrayList<String> l = new ArrayList<String>();
+		ArrayList<Node> nodeL = new ArrayList<Node>();
 		while (n.children.size() > 0) { 
 			tmpS = "";
 			if (!pushToTmpS) tmpS = "";
 			pushToTmpS = true;
-			if (check_M_expr(st, (Node)n.children.get(0)) != sym.INT) throw new SymbolException("Symbol Error: array index must int");
+			//if (check_M_expr(st, (Node)n.children.get(0)) != sym.INT) throw new SymbolException("Symbol Error: array index must int");
+			nodeL.add((Node)n.children.get(0));
 			dim ++;
 			n = (Node)n.children.get(1);
 			pushToTmpS = false;
@@ -735,6 +778,7 @@ public class SymbolChecker {
 		SymbolTable.insertSymbol(st, id, type, dim);
 		VarSymbol v = (VarSymbol)SymbolTable.getSymbol(st, id);
 		for (int i = 0; i < dim; i ++) v.dimensionsIR[i] = l.get(i);
+		v.dimentionsNode = nodeL;
 		if (debug) System.out.println(st);
 	}
 	
@@ -773,6 +817,49 @@ public class SymbolChecker {
 		}
 		SymbolTable.insertSymbol(st, s);
 
+	}
+	
+	/**
+	 * AM code to allocate arrays (this function should be called right before checking P_stmts
+	 * @param st SymbolTable
+	 * @throws SymbolException 
+	 */
+	private void allocArrays(SymbolTable st) throws SymbolException {
+		ArrayList<VarSymbol> arrays = SymbolTable.getArrays(st);
+		int i = 0;
+		while (i < arrays.size()) {
+			VarSymbol v = arrays.get(i);
+			if (check_M_expr(st, v.dimentionsNode.get(0)) != sym.INT) throw new SymbolException("Symbol Error: array size must int");
+			AM.println("\tLOAD_R %sp");
+			AM.println("\tLOAD_R %fp");
+			AM.println("\tSTORE_O "+v.offset);
+			int dim = 1;
+			while (dim < v.dimentionsNode.size()) {
+				if (check_M_expr(st, v.dimentionsNode.get(dim)) != sym.INT) throw new SymbolException("Symbol Error: array size must int");
+			}
+			for (dim = 0; dim < v.dimentions; dim ++) {
+				AM.println("\tLOAD_R %fp");
+				AM.println("\tLOAD_O "+v.offset);
+				AM.println("\tLOAD_O "+dim);
+			}
+			dim = 1;
+			while (dim < v.dimentions) {
+				AM.println("\tAPP MUL");
+				dim ++;
+			}
+			AM.println("\tLOAD_R %fp");
+			AM.println("\tLOAD_O "+(st.num_vars+1));
+			AM.println("\tLOAD_I "+v.dimentions);
+			AM.println("\tLOAD_R %fp");
+			AM.println("\tLOAD_O "+v.offset);
+			AM.println("\tLOAD_O "+(v.dimentions+1));
+			AM.println("\tAPP ADD");
+			AM.println("\tAPP_ADD");
+			AM.println("\tLOAD_R %fp");
+			AM.println("\tSTORE_O "+(st.num_vars+1));
+			AM.println("\tALLOC_S");
+			i ++;
+		}
 	}
 	
 	/**
@@ -904,7 +991,9 @@ public class SymbolChecker {
 		AM.println("\tSTORE_R %fp");
 		AM.println("\tALLOC "+st.num_vars);
 		AM.println("\tLOAD_I "+(st.num_vars+2)); // de-alloc, should be negative
-		// todo array
+		// now deal with arrays
+		allocArrays(st);
+					
 		check_M_stmt(st, (Node)curr_node.children.get(1));
 		
 		AM.println("\tLOAD_R %fp");

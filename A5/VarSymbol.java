@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 /**
  * CPSC411 - Assignment 4
  * Represent a variable symbol
@@ -10,6 +12,7 @@ public class VarSymbol extends MySymbol{
 	public int dimentions;
 	public String dimensionsIR[];
 	public int dimentionsSize[];
+	public ArrayList<Node> dimentionsNode;
 	
 	/**
 	 * Constructor - pass in var name, offset, var type, dimensions
@@ -25,6 +28,7 @@ public class VarSymbol extends MySymbol{
 		this.dimentions = dimentions;
 		if (dimentions > 0) dimentionsSize = new int[dimentions];
 		if (dimentions > 0) dimensionsIR = new String[dimentions];
+		dimentionsNode = new ArrayList<Node>();
 	}
 	
 	/**

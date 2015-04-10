@@ -2,9 +2,10 @@
 var a[1][2][3]:int;
 fun x(b[][][]:int):int {
 	begin
-	return b[0][0][0];
+	return b[0][1][0];
 	end
 };
 begin
+a[0][1][0] = 2;
 print x(a);
 end
