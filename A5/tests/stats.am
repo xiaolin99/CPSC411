@@ -108,12 +108,14 @@ loop1:
 	LOAD_I 0
 	APP EQ
 	JUMP_C loop2
+	JUMP block1
+block1:
 	LOAD_R %fp
 	ALLOC 2
 	LOAD_R %sp
 	STORE_R %fp
 	ALLOC 1
-	LOAD_I 3
+	LOAD_I 4
 	READ_I
 	LOAD_R %fp
 	STORE_O 1
@@ -123,6 +125,8 @@ loop1:
 	APP EQ
 	APP NOT
 	JUMP_C cond3
+	JUMP block2
+block2:
 	LOAD_R %fp
 	ALLOC 2
 	LOAD_R %sp
