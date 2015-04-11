@@ -1,0 +1,59 @@
+/* This test program will test every aspect about arrays:
+- declare multiple arrays of multiple dimensions
+- arrays using variables as dimensions
+- passing array to function
+- the "size" operator
+- assignment and call to array elements
+
+Basically, user enters 3 int, which will construct a 3D int array
+Then program will fill up the array with sequential numbers starting from 0
+Finally program will print out each element of the array
+For example, if user enters 1, 2, 3, program will print out 0 - 5
+*/
+var a:int;
+var b:int;
+var c:int;
+begin
+read a;
+read b;
+read c;
+{
+	var x[a][b][c]:int;
+	var s[3]:int;
+	var r:int;
+	fun fill(y[][][]:int):int {
+		var i:int;
+		var j:int;
+		var k:int;
+		begin
+		s[0] := size(y[]);
+		s[1] := size(y[][]);
+		s[2] := size(y[][][]);
+		i := 0;
+		while i < s[0] do {
+			begin
+			j := 0;
+			while j < s[1] do {
+				begin
+				k := 0;
+				while k < s[2] do {
+					begin
+					y[i][j][k] := k + j * s[2] + i * s[1] * s[2];
+					print y[i][j][k];
+					k := k+1;
+					end
+				};
+				j := j+1;
+				end
+			};
+			i := i+1;
+			end
+		};
+		return 0;
+		end	
+	};
+	begin
+	r := fill(x);
+	end
+};
+end

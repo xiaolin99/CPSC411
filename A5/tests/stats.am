@@ -1,0 +1,215 @@
+	JUMP mprog
+fun1:
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 2
+	LOAD_R %fp
+	LOAD_O -5
+	LOAD_R %fp
+	LOAD_O -4
+	APP DIV
+	LOAD_R %fp
+	LOAD_O -6
+	LOAD_R %fp
+	LOAD_O -4
+	ALLOC 1
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_R %fp
+	LOAD_R %cp
+	JUMP fun2
+	ALLOC 1
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_R %fp
+	LOAD_R %cp
+	JUMP fun3
+	APP SUB
+	LOAD_R %fp
+	STORE_O -6
+	LOAD_R %fp
+	LOAD_O 0
+	LOAD_R %fp
+	STORE_O -5
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+	ALLOC -3
+	JUMP_S
+fun2:
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 2
+	LOAD_R %fp
+	LOAD_O -5
+	LOAD_R %fp
+	LOAD_O -4
+	APP DIV
+	LOAD_R %fp
+	STORE_O -5
+	LOAD_R %fp
+	LOAD_O 0
+	LOAD_R %fp
+	STORE_O -4
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+	ALLOC -2
+	JUMP_S
+fun3:
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 2
+	LOAD_R %fp
+	LOAD_O -4
+	LOAD_R %fp
+	LOAD_O -4
+	APP MUL
+	LOAD_R %fp
+	STORE_O -4
+	LOAD_R %fp
+	LOAD_O 0
+	LOAD_R %fp
+	STORE_O -3
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+	ALLOC -1
+	JUMP_S
+mprog:
+	LOAD_R %sp
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 4
+	LOAD_I 0
+	LOAD_R %fp
+	STORE_O 3
+	LOAD_I 0
+	LOAD_R %fp
+	STORE_O 4
+	LOAD_I 0
+	LOAD_R %fp
+	STORE_O 2
+	LOAD_I 0
+	LOAD_R %fp
+	STORE_O 1
+loop1:
+	LOAD_R %fp
+	LOAD_O 4
+	LOAD_I 0
+	APP EQ
+	JUMP_C loop2
+	LOAD_R %fp
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 1
+	LOAD_I 3
+	READ_I
+	LOAD_R %fp
+	STORE_O 1
+	LOAD_R %fp
+	LOAD_O 1
+	LOAD_I 0
+	APP EQ
+	APP NOT
+	JUMP_C cond3
+	LOAD_R %fp
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O 3
+	LOAD_I 1
+	APP ADD
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	STORE_O 3
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O 2
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O 1
+	APP ADD
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	STORE_O 2
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O 1
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O 1
+	ALLOC 1
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_R %fp
+	LOAD_R %cp
+	JUMP fun3
+	APP ADD
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	STORE_O 1
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+	JUMP cond4
+cond3:
+	LOAD_I 1
+	LOAD_R %fp
+	LOAD_O -2
+	STORE_O 4
+cond4:
+	LOAD_R %fp
+	LOAD_O 2
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+	JUMP loop1
+loop2:
+	LOAD_R %fp
+	LOAD_O 2
+	LOAD_R %fp
+	LOAD_O 3
+	ALLOC 1
+	LOAD_R %fp
+	LOAD_R %fp
+	LOAD_R %cp
+	JUMP fun2
+	PRINT_I
+	LOAD_R %fp
+	LOAD_O 2
+	LOAD_R %fp
+	LOAD_O 1
+	LOAD_R %fp
+	LOAD_O 3
+	ALLOC 1
+	LOAD_R %fp
+	LOAD_R %fp
+	LOAD_R %cp
+	JUMP fun1
+	PRINT_I
+	ALLOC -5
+	HALT

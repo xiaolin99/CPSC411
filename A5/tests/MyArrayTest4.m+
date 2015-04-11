@@ -1,0 +1,16 @@
+/* dynamic-sized arrays (array size is a variable) 
+Program should print out the sum of the 2 integers user enters 
+*/
+var a:int;
+var b:int;
+begin
+read a;
+read b;
+{
+	var x[a+b]:int;
+	begin
+	x[a+b-1] := size(x[]);
+	print x[a+b-1];
+	end
+};
+end

@@ -1,47 +1,15 @@
-var a:int;
-var b:int;
-var c:int;
-begin
-read a;
-read b;
-read c;
-{
-	var x[a][b][c]:int;
-	var s[3]:int;
-	var r:int;
-	fun fill(y[][][]:int):int {
-		var i:int;
-		var j:int;
-		var k:int;
-		begin
-		s[0] := size(y[]);
-		s[1] := size(y[][]);
-		s[2] := size(y[][][]);
-		i := 0;
-		while i < s[0] do {
-			begin
-			j := 0;
-			while j < s[1] do {
-				begin
-				k := 0;
-				while k < s[2] do {
-					begin
-					y[i][j][k] := k + j * s[2] + i * s[1] * s[2];
-					print y[i][j][k];
-					k := k+1;
-					end
-				};
-				j := j+1;
-				end
-			};
-			i := i+1;
-			end
-		};
-		return 0;
-		end	
-	};
+/* testing basic array declaration and array element calls 
+Program should print out 10
+*/
+int b;
+fun x(a:int):int {
+	var r[10][20]:real;
 	begin
-	r := fill(x);
+		r[0][10] := 10.0;
+		print r[0][10];
 	end
+	return 0;
 };
+begin
+b := x(b);
 end

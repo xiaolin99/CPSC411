@@ -1,0 +1,14 @@
+/* test passing array to functions 
+Program should print out 10 
+*/
+var x[10][20]:int;
+fun a(y[][]:int):int {
+	begin
+	y[9][10] := 10;
+	return 0;
+	end
+};
+begin
+x[0][0] := a(x);
+print x[9][10];
+end
