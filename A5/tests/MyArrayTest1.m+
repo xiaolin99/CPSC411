@@ -7,22 +7,26 @@ read b;
 read c;
 {
 	var x[a][b][c]:int;
+	var s[3]:int;
 	var r:int;
 	fun fill(y[][][]:int):int {
 		var i:int;
 		var j:int;
 		var k:int;
 		begin
+		s[0] := size(y[]);
+		s[1] := size(y[][]);
+		s[2] := size(y[][][]);
 		i := 0;
-		while i < size(y[]) do {
+		while i < s[0] do {
 			begin
 			j := 0;
-			while j < size(y[][]) do {
+			while j < s[1] do {
 				begin
 				k := 0;
-				while k < size(y[][][]) do {
+				while k < s[2] do {
 					begin
-					y[i][j][k] := k + j * size(y[][][]) + i * size(y[][][]) * size(y[][]);
+					y[i][j][k] := k + j * s[2] + i * s[1] * s[2];
 					print y[i][j][k];
 					k := k+1;
 					end
