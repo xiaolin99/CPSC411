@@ -667,7 +667,8 @@ public class SymbolChecker {
 			addToString("\nIBLOCK(");
 			n = (Node)n.children.get(0);
 			blockCounter ++;
-			SymbolTable blockSt = st.insertST("Block"+blockCounter);
+			SymbolTable blockSt = st.insertST("block"+blockCounter);
+			AM.println("\tJUMP "+"block"+blockCounter);
 			addToString("\n\t[");
 			SymbolTable st1 = check_M_decl(blockSt, (Node)n.children.get(0));
 			addToString("]\n\t,");
@@ -687,6 +688,7 @@ public class SymbolChecker {
 				i ++;
 			}
 			addToString("]\n\t,");
+			AM.println("block"+blockCounter+":");
 			AM.println("\tLOAD_R %fp");
 			AM.println("\tALLOC 2");
 			AM.println("\tLOAD_R %sp");
