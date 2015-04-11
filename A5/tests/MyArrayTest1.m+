@@ -14,12 +14,12 @@ read c;
 		var k:int;
 		begin
 		i := 0;
-		j := 0;
-		k := 0;
 		while i < size(y[]) do {
 			begin
+			j := 0;
 			while j < size(y[][]) do {
 				begin
+				k := 0;
 				while k < size(y[][][]) do {
 					begin
 					y[i][j][k] := k + j * size(y[][][]) + i * size(y[][][]) * size(y[][]);
