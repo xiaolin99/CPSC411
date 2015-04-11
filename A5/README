@@ -28,6 +28,7 @@ tests - a folder containing all the test
   MyArrayTest1/2/3/4/5.m+ - tests I have written to test arrays. These are all working code. Please see their code comments for details
   MyTest1/2/3/4/5.m+ - tests from A4 for semantic check
   other .m+ - various tests copied from /home/411/M+ folder
+  various .am - am code created from my parser 
 
 -----------------------------------------------------------------------------
 
