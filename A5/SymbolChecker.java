@@ -846,7 +846,7 @@ public class SymbolChecker {
 			AM.println("\tLOAD_I "+v.dimentions);
 			AM.println("\tLOAD_R %fp");
 			AM.println("\tLOAD_O "+v.offset);
-			AM.println("\tLOAD_O "+(v.dimentions+1));
+			AM.println("\tLOAD_O "+v.dimentions);
 			AM.println("\tAPP ADD");
 			AM.println("\tAPP ADD");
 			AM.println("\tLOAD_R %fp");
