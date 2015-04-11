@@ -829,6 +829,7 @@ public class SymbolChecker {
 		int i = 0;
 		while (i < arrays.size()) {
 			VarSymbol v = arrays.get(i);
+			System.out.println(v.name);
 			if (check_M_expr(st, v.dimentionsNode.get(0)) != sym.INT) throw new SymbolException("Symbol Error: array size must int");
 			AM.println("\tLOAD_R %sp");
 			AM.println("\tLOAD_R %fp");

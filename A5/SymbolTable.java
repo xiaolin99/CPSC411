@@ -202,7 +202,7 @@ public class SymbolTable {
 	}
 	
 	/**
-	 * Method to find all arrays in a symbol table
+	 * Method to find all arrays in a symbol table (function Params are not included)
 	 * @param st SymbolTable
 	 * @return ArrayList
 	 */
@@ -213,7 +213,7 @@ public class SymbolTable {
 			MySymbol s = st.symbols.get(i);
 			if (s instanceof VarSymbol) {
 				VarSymbol v = (VarSymbol)s;
-				if (v.dimentions > 0) l.add(v);
+				if (v.dimentions > 0 && v.offset > 0) l.add(v);
 			}
 		}
 		return l;
