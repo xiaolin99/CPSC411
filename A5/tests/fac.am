@@ -1,0 +1,65 @@
+	JUMP mprog
+fun1:
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 1
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O -4
+	LOAD_F 0.0
+	APP EQ_F
+	JUMP_C cond1
+	LOAD_F 1.0
+	LOAD_R %fp
+	STORE_O 1
+	JUMP cond2
+cond1:
+	LOAD_R %fp
+	LOAD_O -4
+	LOAD_R %fp
+	LOAD_O -4
+	LOAD_F 1.0
+	APP SUB_F
+	ALLOC 1
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_R %fp
+	LOAD_R %cp
+	JUMP fun1
+	APP MUL_F
+	LOAD_R %fp
+	STORE_O 1
+cond2:
+	LOAD_R %fp
+	LOAD_O 1
+	LOAD_R %fp
+	STORE_O -4
+	LOAD_R %fp
+	LOAD_O 0
+	LOAD_R %fp
+	STORE_O -3
+	LOAD_R %fp
+	LOAD_O 2
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+	ALLOC -1
+	JUMP_S
+mprog:
+	LOAD_R %sp
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 1
+	READ_F
+	LOAD_R %fp
+	STORE_O 1
+	LOAD_R %fp
+	LOAD_O 1
+	ALLOC 1
+	LOAD_R %fp
+	LOAD_R %fp
+	LOAD_R %cp
+	JUMP fun1
+	PRINT_F
+	ALLOC -2
+	HALT
