@@ -134,16 +134,6 @@ public class SymbolChecker {
 		AM.println("\tSTORE_O "+v.offset);
 	}
 	
-	/**
-	 * Get type from a variable name
-	 * @param st SymbolTable
-	 * @param name String
-	 * @return variable type
-	 * @throws SymbolException
-	 */
-	private int check_ID(SymbolTable st, String name) throws SymbolException {
-		return SymbolTable.getType(st, name);
-	}
 	
 	/**
 	 * Checks array index from current node (it must be int). curr_node must be "array_dimensions" non-terminal
@@ -162,7 +152,7 @@ public class SymbolChecker {
 			return dim;
 		}
 		while (n.children.size() > 0) { 
-			if (check_M_expr(st, (Node)curr_node.children.get(0)) != sym.INT) throw new SymbolException("Symbol Error: array index must int");
+			if (check_M_expr(st, (Node)n.children.get(0)) != sym.INT) throw new SymbolException("Symbol Error: array index must int");
 			// trying to calculate the total offset of the array item
 			int i = dim+1;
 			while (i < v.dimentions) {
@@ -832,7 +822,6 @@ public class SymbolChecker {
 		int i = 0;
 		while (i < arrays.size()) {
 			VarSymbol v = arrays.get(i);
-			System.out.println(v.name);
 			if (check_M_expr(st, v.dimentionsNode.get(0)) != sym.INT) throw new SymbolException("Symbol Error: array size must int");
 			AM.println("\tLOAD_R %sp");
 			AM.println("\tLOAD_R %fp");
