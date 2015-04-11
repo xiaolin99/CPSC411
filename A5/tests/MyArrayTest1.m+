@@ -1,14 +1,13 @@
 /* testing basic array declaration and array element calls 
-Program should print out 10
-*/
-int b;
+Program should print out 10 */
+var b:int;
 fun x(a:int):int {
 	var r[10][20]:real;
 	begin
 		r[0][10] := 10.0;
 		print r[0][10];
+		return 0;
 	end
-	return 0;
 };
 begin
 b := x(b);

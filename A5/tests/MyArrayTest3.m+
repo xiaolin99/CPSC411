@@ -2,13 +2,14 @@
 Program should print out 10
 */
 
-int b;
+var b:int;
 fun x(a:int):int {
 	var r[2][3][4][5][6][7][8][9][10]:real;
 	begin
 		print size(r[][][][][][][][][]);
+		return 0;
 	end
-	return 0;
+
 };
 begin
 b := x(b);
