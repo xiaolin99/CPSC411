@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 
 /**
- * CPSC411 - Assignment 4
+ * CPSC411 - Assignment 5
  * Represent a function symbol
  * @author xlin
  *

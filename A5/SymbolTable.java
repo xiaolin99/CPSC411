@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 
 /**
- * CPSC411 - Assignment 4
+ * CPSC411 - Assignment 5
  * This class represent a SymbolTable
  * @author xlin
  *

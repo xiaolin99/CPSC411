@@ -1,4 +1,4 @@
-/* CPSC441 - Assignment 4 */
+/* CPSC441 - Assignment 5 */
 /* by Xiao Lin */
 /* Reference: http://jflex.de/manual.html */
 import java_cup.runtime.*;

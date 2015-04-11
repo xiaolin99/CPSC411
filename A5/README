@@ -1,8 +1,8 @@
-CPSC411 - Assignemt 4
+CPSC411 - Assignemt 5
 by Xiao Lin
 00288263
 
-NOTE: I did this assignment for M+, which is different from my A3
+NOTE: I have completed the implementation for ARRAYS
 -----------------------------------------------------------------------------
 
 Files:
@@ -22,33 +22,35 @@ VarSymbol.java - java class for variable symbol
 Param.java - java class for function param
 SymbolException.java - java class for any semantic exception
 SymbolTable.java - java class for symbol table
-SymbolChecker.java - contains method to check semantics from the start AST node
+SymbolChecker.java - contains method to check semantics from the start AST node and generating AM code
 
 tests - a folder containing all the test
-  MyTest1/2/3/4/5.m+ - tests I have written
+  MyArrayTest1/2/3/4/5.m+ - tests I have written to test arrays. These are all working code. Please see their code comments for details
+  MyTest1/2/3/4/5.m+ - tests from A4 for semantic check
   other .m+ - various tests copied from /home/411/M+ folder
 
 -----------------------------------------------------------------------------
 
 To Compile:
 (must have jflex installed)
-1. change directory to A4
+1. change directory to A5
 2. run "make"
 
 -----------------------------------------------------------------------------
 
 To Run:
 (must compile first)
-1. change directory to A4
+1. change directory to A5
 2. make sure to have execute permission of "run_parser.sh"
 3. run
 ./run_parser.sh $PATH_TO_TESTFILE
 (the AST tree and IR will be printed to stdout)
+(if semantics check passed, it will print out the name of the am file at the end)
 
 -----------------------------------------------------------------------------
 
 To Clean Up:
-1. change directory to A4
+1. change directory to A5
 2. run "make clean" to clean all .class files
 3. run "make clean-all" to clean all .class files and all auto-generated .java files
 
@@ -62,111 +64,175 @@ http://stackoverflow.com/questions/4650366/create-abstract-tree-problem-from-par
 -----------------------------------------------------------------------------
 
 Sample Output:
+[xlin@cse A5]$ 
+[xlin@cse A5]$ cat tests/MyArrayTest5.m+
+/* This test program will test every aspect about arrays:
+- declare multiple arrays of multiple dimensions
+- arrays using variables as dimensions
+- passing array to function
+- the "size" operator
+- assignment and call to array elements
 
-[xlin@localhost A4]$ 
-[xlin@localhost A4]$ 
-[xlin@localhost A4]$ ./run_parser.sh tests/test1.m+ 
-Parsing [tests/test1.m+]
+Basically, user enters 3 int, which will construct a 3D int array
+Then program will fill up the array with sequential numbers starting from 0
+Finally program will print out each element of the array
+For example, if user enters 1, 2, 3, program will print out 0 - 5
+*/
+var a:int;
+var b:int;
+var c:int;
+begin
+read a;
+read b;
+read c;
+{
+	var x[a][b][c]:int;
+	var s[3]:int;
+	var r:int;
+	fun fill(y[][][]:int):int {
+		var i:int;
+		var j:int;
+		var k:int;
+		begin
+		s[0] := size(y[]);
+		s[1] := size(y[][]);
+		s[2] := size(y[][][]);
+		i := 0;
+		while i < s[0] do {
+			begin
+			j := 0;
+			while j < s[1] do {
+				begin
+				k := 0;
+				while k < s[2] do {
+					begin
+					y[i][j][k] := k + j * s[2] + i * s[1] * s[2];
+					print y[i][j][k];
+					k := k+1;
+					end
+				};
+				j := j+1;
+				end
+			};
+			i := i+1;
+			end
+		};
+		return 0;
+		end	
+	};
+	begin
+	r := fill(x);
+	end
+};
+end
+[xlin@cse A5]$ 
+[xlin@cse A5]$ make
+javac -cp java_cup-runtime.jar *java
+[xlin@cse A5]$ ./run_parser.sh tests/MyArrayTest.m+
+Parsing [tests/MyArrayTest.m+]
+java.io.FileNotFoundException: tests/MyArrayTest.m+ (No such file or directory)
+	at java.io.FileInputStream.open(Native Method)
+	at java.io.FileInputStream.<init>(FileInputStream.java:146)
+	at java.io.FileInputStream.<init>(FileInputStream.java:101)
+	at java.io.FileReader.<init>(FileReader.java:58)
+	at parser.main(parser.java:376)
+[xlin@cse A5]$ ./run_parser.sh tests/MyArrayTest5.m+
+Parsing [tests/MyArrayTest5.m+]
 
 AST: 
 M_prog (
-	M_block[M_var("x", [], M_bool)]
-	,[M_read ("x")M_ass ("x",M_app (M_add,M_app (M_id ("x",),1))M_app (M_id ("x",)])
-
-Checking Semantics ...
-SymbolException: Symbol Error: ADDOP cannot be used for M_app (M_add,M_app (M_id ("x",),1)M_app (M_addM_addM_add,M_app (M_id ("x",)M_app (M_id ("x",)M_app (M_id ("x",)M_app (M_id ("x",),111)
-	at SymbolChecker.check_M_expr(SymbolChecker.java:241)
-	at SymbolChecker.check_M_expr(SymbolChecker.java:396)
-	at SymbolChecker.check_M_expr(SymbolChecker.java:396)
-	at SymbolChecker.check_M_expr(SymbolChecker.java:396)
-	at SymbolChecker.check_M_stmt(SymbolChecker.java:437)
-	at SymbolChecker.check_M_stmt(SymbolChecker.java:418)
-	at SymbolChecker.check_M_stmt(SymbolChecker.java:422)
-	at SymbolChecker.check_M_stmt(SymbolChecker.java:413)
-	at SymbolChecker.checkSyntax(SymbolChecker.java:65)
-	at parser.main(parser.java:388)
-Semantics are not good
-[xlin@localhost A4]$ 
-[xlin@localhost A4]$ ./run_parser.sh tests/test2.m+ 
-Parsing [tests/test2.m+]
-
-AST: 
-M_prog (
-	M_block[M_var("x", [], M_int)M_var("y", [], M_int)M_var("a", [], M_bool)
-		M_fun("f", ["a"M_int"b"M_int],M_bool,[]
-			,[M_app (M_gt,M_app (M_id ("a",),M_app (M_id ("b",))])]
-	,[M_read ("x")M_read ("y")M_ass ("a",M_app (M_id ("f",M_app (M_id ("y",)M_app (M_id ("x",)))M_app (M_id ("a",)])
+	M_block[M_var("a", [], M_int)M_var("b", [], M_int)M_var("c", [], M_int)]
+	,[M_read ("a")M_read ("b")M_read ("c")	M_block[M_var("x", [M_app (M_id ("a",)M_app (M_id ("b",)M_app (M_id ("c",)], M_int)M_var("s", [3], M_int)M_var("r", [], M_int)
+		M_fun("fill", ["y"M_int],M_int,[M_var("i", [], M_int)M_var("j", [], M_int)M_var("k", [], M_int)]
+			,[M_ass ("s"0,M_app (M_size "y",))M_ass ("s"1,M_app (M_size "y",))M_ass ("s"2,M_app (M_size "y",))M_ass ("i",0)M_while (M_app (M_lt,M_app (M_id ("i",),M_app (M_id ("s",0)),	M_block[]
+	,[M_ass ("j",0)M_while (M_app (M_lt,M_app (M_id ("j",),M_app (M_id ("s",1)),	M_block[]
+	,[M_ass ("k",0)M_while (M_app (M_lt,M_app (M_id ("k",),M_app (M_id ("s",2)),	M_block[]
+	,[M_ass ("y"M_app (M_id ("i",)M_app (M_id ("j",)M_app (M_id ("k",),M_app (M_add,M_app (M_add,M_app (M_id ("k",),M_app (M_mul,M_app (M_id ("j",),M_app (M_id ("s",2))),M_app (M_mul,M_app (M_mul,M_app (M_id ("i",),M_app (M_id ("s",1)),M_app (M_id ("s",2))))M_app (M_id ("y",M_app (M_id ("i",)M_app (M_id ("j",)M_app (M_id ("k",))M_ass ("k",M_app (M_add,M_app (M_id ("k",),1))])M_ass ("j",M_app (M_add,M_app (M_id ("j",),1))])M_ass ("i",M_app (M_add,M_app (M_id ("i",),1))])0])]
+	,[M_ass ("r",M_app (M_id ("fill",M_app (M_id ("x",)))]])
 
 Checking Semantics ...
 Intermediate Representation: 
 IPROG (
-[IFUN 
-	("FUN1"
-	,[]
-	,0
-	,2
-	,[]
-	,
-	,IRETURN( IAPP(IGT,[ IID(0,-4,[])],[ IID(0,-5,[])]))
-	)
-]
+[]
 ,3
 ,[]
-,IREAD_I(0,1, [])
-,IREAD_I(0,2, [])
-,IASS(0,3,[], IAPP(ICALL ("FUN1",0), IID(0,2,[]) IID(0,1,[])))
-,IPRINT_B( IID(0,3,[]))
-,)
-
-Semantics are good
-[xlin@localhost A4]$ 
-[xlin@localhost A4]$ ./run_parser.sh tests/test3.m+ 
-Parsing [tests/test3.m+]
-
-AST: 
-M_prog (
-	M_block[M_var("x", [], M_bool)
-		M_fun("f", ["a"M_bool"b"M_bool],M_bool,[]
-			,[true])]
-	,[M_ass ("x",M_app (M_id ("f",M_app (M_id ("x",)M_app (M_id ("x",)))M_app (M_id ("x",)])
-
-Checking Semantics ...
-Intermediate Representation: 
-IPROG (
-[IFUN 
-	("FUN1"
+,IREAD_I(0,1, )
+,IREAD_I(0,2, )
+,IREAD_I(0,3, )
+,
+IBLOCK(
+	[IFUN 
+	("fun1"
 	,[]
+	,3
+	,1
+	,[]
+	,IASS(1,2,,ISIZE(0,-4,1)[IINT 0,])
+	,IASS(1,2,,ISIZE(0,-4,2)[IINT 1,])
+	,IASS(1,2,,ISIZE(0,-4,3)[IINT 2,])
+	,IASS(0,1,,IINT 0)
+	,ICOND( IAPP(ILT,[ IID(0,1,[])],[ IID(1,2,[IINT 0,])]), 
+IBLOCK(
+	[]
 	,0
-	,2
+	,0
 	,[]
+	,IASS(1,2,,IINT 0)
+	,ICOND( IAPP(ILT,[ IID(1,2,[])],[ IID(2,2,[IINT 1,])]), 
+IBLOCK(
+	[]
+	,0
+	,0
+	,[]
+	,IASS(2,3,,IINT 0)
+	,ICOND( IAPP(ILT,[ IID(2,3,[])],[ IID(3,2,[IINT 2,])]), 
+IBLOCK(
+	[]
+	,0
+	,0
+	,[]
+	,IASS(3,-4,, IAPP(IADD,[ IAPP(IADD,[ IID(3,3,[])],[ IAPP(IMUL,[ IID(3,2,[])],[ IID(4,2,[IINT 2,])])])],[ IAPP(IMUL,[ IAPP(IMUL,[ IID(3,1,[])],[ IID(4,2,[IINT 1,])])],[ IID(4,2,[IINT 2,])])])[ IID(3,1,[]), IID(3,2,[]), IID(3,3,[]),])
+	,IPRINT_I( IID(3,-4,[ IID(3,1,[]), IID(3,2,[]), IID(3,3,[]),]))
+	,IASS(3,3,, IAPP(IADD,[ IID(3,3,[])],[IINT 1]))
+	,))
+	,IASS(2,2,, IAPP(IADD,[ IID(2,2,[])],[IINT 1]))
+	,))
+	,IASS(1,1,, IAPP(IADD,[ IID(1,1,[])],[IINT 1]))
+	,))
 	,
-	,IRETURN(IBOOL true)
+	,IRETURN(IINT 0)
 	)
 ]
-,1
-,[]
-,IASS(0,1,[], IAPP(ICALL ("FUN1",0), IID(0,1,[]) IID(0,1,[])))
-,IPRINT_B( IID(0,1,[]))
+	,3
+	,0
+	,[(1,[][][])(2,[])]
+	, IID(1,1,[]) IID(1,2,[]) IID(1,3,[])IINT 3IASS(0,3,, IAPP(ICALL ("fun1",0), IID(0,1,[])))
+	,)
 ,)
 
 Semantics are good
-[xlin@localhost A4]$ 
-[xlin@localhost A4]$ ./run_parser.sh tests/test4.m+ 
-Parsing [tests/test4.m+]
+AM file created: tests/MyArrayTest5.am
+[xlin@cse A5]$ AM tests/MyArrayTest5.am
 
-AST: 
-M_prog (
-	M_block[M_var("x", [], M_int)M_var("y", [], M_int)
-		M_fun("f", ["a"M_int"b"M_int],M_int,[]
-			,[M_app (M_neg 1)])]
-	,[M_ass ("f",M_app (M_id ("f",M_app (M_id ("y",)M_app (M_id ("x",)))M_app (M_id ("x",)])
+M+ assembler (version 0.00)
+---- Please report bugs and problems to robin@cpsc
+===========================================================
+M+:1
+M+:2
+M+:3
 
-Checking Semantics ...
-SymbolException: Symbol Error: "f" is not var
-	at SymbolChecker.check_M_stmt(SymbolChecker.java:432)
-	at SymbolChecker.check_M_stmt(SymbolChecker.java:418)
-	at SymbolChecker.check_M_stmt(SymbolChecker.java:413)
-	at SymbolChecker.checkSyntax(SymbolChecker.java:65)
-	at parser.main(parser.java:388)
-Semantics are not good
-[xlin@localhost A4]$ 
+M+: 0
+
+M+: 1
+
+M+: 2
+
+M+: 3
+
+M+: 4
+
+M+: 5
+
+<<<HALT>>>
+[xlin@cse A5]$ 
+

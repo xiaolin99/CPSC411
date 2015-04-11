@@ -1,8 +1,8 @@
-/* CPSC441 - Assignment 4 */
+/* CPSC441 - Assignment 5 */
 /* by Xiao Lin */
 /* Reference: http://www2.cs.tum.edu/projekte/cup/examples.php */
 /*	      https://github.com/moy/JFlex/tree/master/jflex/examples */
-/* Note: this spec is for M+, not M++ */
+/* Note: this spec is for M+ with arrays, not M++ */
 
 import java_cup.runtime.*;
 import java.io.*;
