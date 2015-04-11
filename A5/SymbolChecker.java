@@ -2,9 +2,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 /**
- * CPSC411 - Assignment 4
- * Semantics (Symbols) checking for M+ language
- * Spec: http://pages.cpsc.ucalgary.ca/~robin/class/411/M+/m+data.spec
+ * CPSC411 - Assignment 5
+ * Semantics (Symbols) checking for M+ language + AM code generation
+ * Spec: http://pages.cpsc.ucalgary.ca/~robin/class/411/M+/M+.txt
  * @author xlin
  *
  */
@@ -796,7 +796,6 @@ public class SymbolChecker {
 			if (debug) System.out.println("Checking M_fun params");
 			Node next = (Node)paramN.children.get(1);
 			paramN = (Node)paramN.children.get(0);
-			String id = paramN.children.get(0).toString();
 			int type = check_M_type((Node)paramN.children.get(2));
 			int dims = 0;
 			Node dimN = (Node)paramN.children.get(1);
